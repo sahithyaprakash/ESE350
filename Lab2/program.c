@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "uart.h"
+#include "../Arduino_ATMega/uart.h"
 
 unsigned int diff, edge1, edge2, overflows;
 unsigned long pulse_width;

@@ -1,6 +1,6 @@
 name = output
 device = /dev/tty.usbmodem1421
-src = ~/Developer/ESE350/Lab2/program.c
+src = ../Lab2/program.c
 flags = -std=c11 -Os
 baud = 9600
 
