@@ -45,17 +45,17 @@ void addMorseSymbol(char c) {
 	morseSymbolArray[i] = c;
 }
 
-void determineAndStoreMorse(long pulse) {
-	//printf("%u", pulse_width);
-	//if it's depressed or no.
-	if (pulse > DOT_WIDTH_MIN && pulse < DOT_WIDTH_MAX) {//
-		addMorseSymbol('.');
-		//sevenSegmentDot();
-	} else if (pulse >= DOT_WIDTH_MAX) {
-		addMorseSymbol('-'); //put dash
-		//sevenSegmentDash();
-	}
-}
+// void determineAndStoreMorse(long pulse) {
+// 	//printf("%u", pulse_width);
+// 	//if it's depressed or no.
+// 	if (pulse > DOT_WIDTH_MIN && pulse < DOT_WIDTH_MAX) {//
+// 		addMorseSymbol('.');
+// 		//sevenSegmentDot();
+// 	} else if (pulse >= DOT_WIDTH_MAX) {
+// 		addMorseSymbol('-'); //put dash
+// 		//sevenSegmentDash();
+// 	}
+// }
 
 
 /* startNewLetter()
@@ -165,7 +165,6 @@ void handleSpacing() {
 }
 
 int main (void) {
-	int r = 0;
 	uart_init();
 	DDRB = 0xFF;
 	TCCR1B = 0x03; 				//start timer, prescaler = 64
