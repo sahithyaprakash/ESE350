@@ -4,24 +4,13 @@
 #include <string.h>
 #include "../Arduino_ATMega/uart.h"
 
+#define MAX_OVERFLOWS 10000
 int i = 0;
+int overflows = 0;
 
 ISR(TIMER1_OVF_vect) {
 	//overflows ++;
-	if (i = 0) {
-		PORTB = 0x10; //turn port 12 to high voltage
-		PORTB |= 0x20; //turn port 13 to high voltage
-	} else if (i = 1) {
-		PORTB = 0x04; //turn port 10 to high voltage
-		PORTB |= 0x10; //turn port 12 to high voltage
-	} else if (i = 2) {
-		PORTB = 0x04; //turn port 10 to high voltage
-    	PORTB |= 0x08; //turn port 11 to high voltage
-	} else {
-		i = 0;
-		PORTB = 0x08; //turn port 11 to high voltage
-		PORTB |= 0x20; //turn port 13 to high voltage
-	}
+	putchar('o');
 }
 
 int main (void) {
@@ -32,19 +21,17 @@ int main (void) {
 	//initialize controller state
 	uart_init();
 	DDRB = 0xFF; 					// make all pins outputs
-	TCCR1B = 0x03; 					//start timer, prescaler = 64
+	TCCR1B = 0x05; 					//start timer, prescaler = 1024
 	TIMSK1 = 0x01; 					//enable overflow interrupt
+	sei();
+	PORTB = 0xFF;
 
  //    PORTB = 0x04; //turn port 10 to high voltage
  //    PORTB = 0x08; //turn port 11 to high voltage
 	// PORTB = 0x10; //turn port 12 to high voltage
 	// PORTB = 0x20; //turn port 13 to high voltage
 
-	while (1) {
-		//TODO: check for errors
-		// if (frequency == 0 || duration == 0) {
-		// 	TCCR1A = 0x80;
-		// 	continue;
-		// }
-	}
+	while (overflows <= 100 * MAX_OVERFLOWS) {
+		//PORTB = 0x04; //turn port 10 to high voltage
+	};
 }
