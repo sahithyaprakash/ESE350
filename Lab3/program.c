@@ -9,7 +9,7 @@
  * and reads the values of the columns when the interrupt is triggered (every 4ms)
  */
 unsigned int rowPorts[] = {0xFB, 0xF7, 0xEF, 0xDF}; // Values to set PORTC pins 2, 3, 4, 5 to low 
-unsigned int columnPorts[] = {0x04, 0x08, 0x10, 0x20}; // Values to set PORTC pins 2, 3, 4, 5 to low 
+unsigned int columnPorts[] = {0x04, 0x08, 0x10, 0x20}; // Values to set PORTD pins 2, 3, 4, 5 to low 
 
 //Index for keeping track of which row is currently set to 0
 unsigned int rowIndex = 0;
@@ -21,18 +21,18 @@ int yIndex = -1; //columns
 ISR(TIMER2_COMPA_vect) {
 	//TURN LED ON
 	//PORTB = 0x20;
-
+	//printf("%x", PIND);
 	// switch 0-hot state to current row index
 	PORTC = rowPorts[rowIndex];
 	//update index based on row and column pressed
 	for (int i = 0; i <= 3; i ++) {
 		//if row port is low, then store the value in xIndex and store columnIndex = yIndex
-		if (PIND & 0xFF == 0xFF) {
+		if ((PIND & 0x3C) == 0x3C) {
 			//TURN LED ON
 			PORTB = 0x20;
 			break;
-		} else if (PIND | columnPorts[i] == 0xFF) {
-			printf("w");
+		} else if (((~((PIND & 0x3C) ^ 0xC3)) & 0x3C) == columnPorts[i]) {
+			//printf("w");
 			//store key
 			yIndex = i;
 			xIndex = rowIndex;
@@ -58,12 +58,11 @@ int main (void) {
 	DDRC = 0xFF; 					// make all C pins outputs
 	DDRD = 0x00; 					// make all D pins inputs
 	DDRB = 0xFF;					// make the LED an output
-	PIND = 0xFF;					// make all input pins high
 
 	//Setup the timer and CTC
 	TCCR2A = 0x02;					// sets timer to CTC mode
 	OCR2A = 0xFF;					// timer upper limit (resets after this value)
-	TCCR2B = 0x01; 					// starts the timer with no prescaler
+	TCCR2B = 0x07; 					// starts the timer with no prescaler
 	TIMSK2 = 0x02; 					// unmasks the timer interrupt for compare
 		
 	sei();							//start interrupts
@@ -71,9 +70,9 @@ int main (void) {
 	while (1) {
 		//Turn LED OFF
 		PORTB = 0x00;
-		if (xIndex >=  0 || yIndex >= 0) {
-			printf("(%i, %i)", xIndex, yIndex);
-			putchar(letters[xIndex][yIndex]);
+		if (xIndex >=  0 && yIndex >= 0 && xIndex < 4 && yIndex < 4) {
+			//printf("(%i, %i)", xIndex, yIndex);
+			printf("%c", letters[xIndex][yIndex]);
 			xIndex = -1;
 			yIndex = -1;
 		}
