@@ -64,17 +64,38 @@ int main (void) {
 	//Setup the timer and CTC
 	//Setup timers for frequency generation
 
+
+	//Timer 0
+	TCCR0A = 0x02;					// enable CTC mode
+	TCCR0A |= 0x40;					// toggle on compare match
+	TCCR0B = 0x01;					// starts the timer with no prescaler
+	OCR0A = 0x00;
+
+	//Timer 1
+	TCCR1A = 0x00;					// enable CTC mode
+	TCCR1B = 0x08;					// enables CTC mode
+	TCCR1A |= 0x40;					// toggle on compare match
+	TCCR1B |= 0x01;					// starts the timer with no prescaler
+	OCR1A = 0x00;
+
+
+
+	//The code below uses fast PWM mode to do the frequency generations
+	/*
 	//Timer 0 
 	TCCR0A = 0x80;					// uses non-inverting output (Clears OC0A on compare match)
 	TCCR0A |= 0x03;					// use fast PWM 
 	TCCR0B = 0x01; 					// start clock 0 with no prescaler
 	TCCR0B |= 0x08;					// reset based on OCR0A
+	OCR0B = 0x00;					// set to 50% duty cycle
 
 	//Timer 1
 	TCCR1A = 0x80;					// uses non-inverting output (Clears OC1A on compare match)
 	TCCR1A |= 0x03;					// use fast PWM 
 	TCCR1B = 0x01; 					// start clock 1 with no prescaler
 	TCCR1B |= 0x18;					// reset based on OCR1A
+	OCR1B = 0x00;					// set to 50% duty cycle
+	*/
 
 	/*
 	 * The following setup code sets up the interception of a buton being pressed on
@@ -92,6 +113,7 @@ int main (void) {
 	sei();							//start interrupts
 
 	while (1) {
+		//printf("(%i, %i)", xIndex, yIndex);
 		if (xIndex >=  0 && yIndex >= 0 && xIndex < 4 && yIndex < 4) {
 			//printf("(%i, %i)", xIndex, yIndex);
 			//printf("%c", letters[xIndex][yIndex]);
@@ -99,8 +121,8 @@ int main (void) {
 			OCR1A = (clock_frequency / rowFrequencies[yIndex]) * 0.5;
 
 			//reset variables
-			xIndex = -1;
-			yIndex = -1;
+			// xIndex = -1;
+			// yIndex = -1;
 		}
 	}
 }
