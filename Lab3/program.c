@@ -197,8 +197,8 @@ int main (void) {
 	//Timer 0
 	TCCR0A = 0x40;					// toggle on compare match
 	TCCR0A |= 0x02;					// enable CTC mode
-	TCCR0B = 0x03;					// starts the timer with no prescaler
-	OCR0A = 0x00;					// make PD6 an output
+	TCCR0B = 0x03;					// starts the timer with prescaler 64
+	OCR0A = 0x00;					// make 
 
 	//Timer 1
 	TCCR1A = 0x00;					// enable CTC mode
@@ -222,18 +222,18 @@ int main (void) {
 	sei();							//start interrupts
 
 	while (1) {
-		//Turn LED OFF
-		PORTB = 0x00;
 		if (xIndex >=  0 && yIndex >= 0 && xIndex < 4 && yIndex < 4) {
+
 			//printf("(%i, %i)", xIndex, yIndex);
 			printf("%c", letters[yIndex][xIndex]);
 
-			OCR0A = (clock_frequency / columnFrequencies[xIndex]) * 2;
+			//The 64 is the prescaler for the clock since timer 0 is 8 bits
+			OCR0A = ((clock_frequency / 64) / columnFrequencies[xIndex]) * 0.5;
 			OCR1A = (clock_frequency / rowFrequencies[yIndex]) * 0.5;
 
 			xIndex = -1;
 			yIndex = -1;
-		}
+		} 
 	}
 }
 
