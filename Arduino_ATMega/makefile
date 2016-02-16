@@ -1,9 +1,9 @@
 name = output
 #Phillip
-#device = /dev/tty.usbmodem1421 
+device = /dev/tty.usbmodem1421 
 #Sahithya
-device = /dev/tty.usbmodem1451 
-src = ../Tutorial2/program.c
+#device = /dev/tty.usbmodem1451 
+src = ../Lab4/program.c
 flags = -std=c11 -Os
 baud = 9600
 

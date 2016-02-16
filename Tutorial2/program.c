@@ -10,9 +10,13 @@ int main (void) {
 uint8_t channel = 1;
 uart_init();
 
+
+//Configure Pin
+DDRB = 0xFF; 			//SET PORTB to be all outputs
+
+//Configure ADC
 ADCSRA = 0x07; 			// Sets the ADC reference clock to 125kHZ
 ADMUX = 0x40;			// Sets to 5V Reference
-//ADMUX |= (1 << REFS0);
 ADCSRA |= 0x80; 		// Powers on the ADC
 ADCSRA |= 0x40;			// First Conversion
 
@@ -22,7 +26,15 @@ ADCSRA |= (1 << ADSC);	//Starts a new conversion
 
 while (1) {
 	while (ADCSRA & (1 << ADSC));	//wait until the conversion is done
-	printf("%u \n", ADC);
+
+	if (ADC > 527) { 
+		//Turn all ports on
+		PORTB = 0xFF;
+	} else {
+		//Turn all ports off
+		PORTB = 0x00;
+	}
+
 	ADCSRA |= (1 << ADSC);	//Starts a new conversion
 }
 }
