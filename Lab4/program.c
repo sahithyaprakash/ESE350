@@ -120,7 +120,7 @@ int main (void) {
 	ADCSRA |= 0x80; 					//powers on the ADC
 	ADCSRA |= 0x40;						//first Conversion
 
-	//Configure 
+	//Configure
 	ADMUX &= 0xF0;						//clear the older channel that was read
 	ADMUX |= channel;					//defines the new ADC channel to be read
 	ADCSRA |= (1 << ADSC);				//starts a new conversion
