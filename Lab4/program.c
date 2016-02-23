@@ -73,10 +73,9 @@ void waitForDuration(unsigned long durationInMicroseconds) {
 //Generates a pulse of the given duration in microseconds using polling
 //DO NOT CALL THIS IN AN INTERRUPT
 void generatePulseOfDuration(int durationInMicroseconds) {
-	DDRB = 0xFF;						//Set ports as outputs
-	PORTB = 0xFF;						//Make rising edge
+	PORTB |= (1 << PB1);			//Make rising edge
 	waitForDuration(5);
-	PORTB = 0x00; 						//Set pins to zero
+	PORTB &= ~(1 << PB1);	//Set pulse generation to zero
 }
 
 int main (void) {
@@ -87,10 +86,13 @@ int main (void) {
 	uint8_t channel = ADC_READ_CHANNEL;			//grab a local variable for the ADC channel
 	unsigned long clockFrequencyADC = 250000; 	//the frequency of the ADC clock
 	unsigned int frequencies[9] = {1000, 1125, 1250, 1375, 1500, 1625, 1750, 1875, 2000}; // in Hz
+	unsigned int pinOutValues[8] = {0x00, 0x04, 0x08, 0x0C, 0x10, 0x14, 0x18, 0x1C};
+
 
 	//Setup data directions
 	DDRD = 0xFF; 						//set to output
-	DDRB = 0xFF;						//Set ports as outputs
+	DDRB = 0xFF & (0 << PB0);			//set to output except PB0
+
 
 	//Setup Input Capture for Timer 1
 	TCCR1B |= 0x40;						//trigger on rising edge
@@ -130,7 +132,13 @@ int main (void) {
 
 	while (1) {
 		if (width != 0) {
-			printf("%u\n", width);
+			unsigned int index = (width - 2000) / 3000;
+			if (index > 7) { //account for value less than 1840
+				index = 7;
+			}
+			PORTB = ((PORTB & 0xE3) | pinOutValues[index]);
+			printf("%x\n", index);
+			//printf("%u\n", width);
 			width = 0;
 		}
 		if (darkness != 0) {
@@ -140,10 +148,11 @@ int main (void) {
 			darkness = 0;
 		}
 		TIMSK1 &= 0xDF;						//mask interrupt for input capture
+		DDRB |= (1 << PB1);					//set PB1 to output so we can generate a pulse
 		generatePulseOfDuration(5);
+		DDRB = 0xFF & (0 << PB1);			//set PB1 to input so it is in high z state
 		waitForDuration(400);				//the device waits for 750 us, so wait some time
 		TIMSK1 |= 0x20;						//unmasks interrupt for input capture
-		DDRB = 0x00;
 		TCCR1B |= 0x40;						//Trigger on rising edge
 		//Wait for the chirp, the echo, and the input + a buffer of 200us
 		waitForDuration(19000);
