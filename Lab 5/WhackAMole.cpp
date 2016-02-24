@@ -80,7 +80,7 @@ void rf_send(char *data, uint8_t len)
 //***************** You can start coding here *****************//
 int main (void)
 {
-    uint8_t channel = 2;
+    uint8_t channel = 15; //channel 16
 
     //Set the Channel. 0 is default, 15 is max
     mrf.SetChannel(channel);
