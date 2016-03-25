@@ -3,8 +3,8 @@ name = output
 device = /dev/tty.usbmodem1421 
 #Sahithya
 #device = /dev/tty.usbmodem1451 
-src = ../Lab4/program.c
-flags = -std=c11 -Os
+src = ../part1.c
+flags = -std=c11 -Os -S
 baud = 9600
 
 printf_min = -Wl,-u,vfprintf -lprintf_min #only int/string support
