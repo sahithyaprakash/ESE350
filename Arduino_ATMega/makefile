@@ -1,10 +1,16 @@
 name = output
 #Phillip
-device = /dev/tty.usbmodem1421 
+#device = /dev/tty.usbmodem1421 
 #Sahithya
+<<<<<<< Updated upstream
 #device = /dev/tty.usbmodem1451 
 src = ../part1.c
 flags = -std=c11 -Os -S
+=======
+device = /dev/tty.usbmodem1451 
+src = ../Stacks/program.c
+flags = -std=c11 -Os -O1
+>>>>>>> Stashed changes
 baud = 9600
 
 printf_min = -Wl,-u,vfprintf -lprintf_min #only int/string support
