@@ -5027,6 +5027,10 @@ Source: Samtec SSW.pdf</description>
 </nets>
 </sheet>
 </sheets>
+<errors>
+<approved hash="113,1,398.103,591.24,X1,,,,,"/>
+<approved hash="113,1,440.097,591.24,X2,,,,,"/>
+</errors>
 </schematic>
 </drawing>
 </eagle>

@@ -1992,12 +1992,34 @@ Source: Samtec SSW.pdf</description>
 <class number="0" name="default" width="0" drill="0">
 </class>
 </classes>
+<modules>
+<module name="MUX_PULLDOWN-NETWORK" prefix="" dx="30.48" dy="20.32">
+<ports>
+</ports>
+<variantdefs>
+</variantdefs>
+<parts>
+</parts>
+<sheets>
+<sheet>
+<plain>
+</plain>
+<instances>
+</instances>
+<busses>
+</busses>
+<nets>
+</nets>
+</sheet>
+</sheets>
+</module>
+</modules>
 <parts>
 <part name="U$11" library="SparkFun-AnalogIC" deviceset="MUX-74HC4067" device="SMD"/>
 <part name="U$12" library="SparkFun-AnalogIC" deviceset="MUX-74HC4067" device="SMD"/>
 <part name="JP1" library="pinhead" deviceset="PINHD-1X100" device=""/>
 <part name="JP2" library="pinhead" deviceset="PINHD-1X100" device=""/>
-<part name="SUPPLY1" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
+<part name="SUPPLY1" library="SparkFun-Aesthetics" deviceset="VCC" device="" value="5V"/>
 <part name="GND1" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="R1" library="SparkFun-Resistors" deviceset="RPACK-BUSSED-8" device="SIP-PTH-8-LP" value="560K"/>
 <part name="R2" library="SparkFun-Resistors" deviceset="RPACK-BUSSED-8" device="SIP-PTH-8-LP" value="560K"/>

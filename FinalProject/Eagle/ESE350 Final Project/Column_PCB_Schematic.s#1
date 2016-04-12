@@ -1930,10 +1930,10 @@ Source: Samtec SSW.pdf</description>
 <instance part="X8" gate="-3" x="116.84" y="533.4"/>
 <instance part="X8" gate="-4" x="116.84" y="530.86"/>
 <instance part="X8" gate="-5" x="116.84" y="528.32"/>
-<instance part="X9" gate="-1" x="132.08" y="78.74"/>
-<instance part="X9" gate="-2" x="132.08" y="76.2"/>
-<instance part="X9" gate="-3" x="132.08" y="73.66"/>
-<instance part="X9" gate="-4" x="132.08" y="71.12"/>
+<instance part="X9" gate="-1" x="132.08" y="520.7"/>
+<instance part="X9" gate="-2" x="132.08" y="518.16"/>
+<instance part="X9" gate="-3" x="132.08" y="515.62"/>
+<instance part="X9" gate="-4" x="132.08" y="513.08"/>
 </instances>
 <busses>
 </busses>
@@ -4373,6 +4373,8 @@ Source: Samtec SSW.pdf</description>
 <wire x1="193.04" y1="68.58" x2="172.72" y2="68.58" width="0.1524" layer="91"/>
 <pinref part="R21" gate="G$1" pin="9"/>
 <wire x1="172.72" y1="68.58" x2="172.72" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="172.72" y1="68.58" x2="139.7" y2="68.58" width="0.1524" layer="91"/>
+<junction x="172.72" y="68.58"/>
 </segment>
 </net>
 <net name="N$191" class="0">

@@ -2356,11 +2356,6 @@ Source: Samtec SSW.pdf</description>
 <label x="228.6" y="342.9" size="1.778" layer="95" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U$7" gate="G$1" pin="EN"/>
-<wire x1="223.52" y1="276.86" x2="228.6" y2="276.86" width="0.1524" layer="91"/>
-<label x="228.6" y="276.86" size="1.778" layer="95" xref="yes"/>
-</segment>
-<segment>
 <pinref part="U$8" gate="G$1" pin="EN"/>
 <wire x1="223.52" y1="210.82" x2="228.6" y2="210.82" width="0.1524" layer="91"/>
 <label x="228.6" y="210.82" size="1.778" layer="95" xref="yes"/>
@@ -2379,6 +2374,11 @@ Source: Samtec SSW.pdf</description>
 <pinref part="GND2" gate="1" pin="GND"/>
 <wire x1="401.32" y1="629.92" x2="401.32" y2="637.54" width="0.1524" layer="91"/>
 <label x="401.32" y="637.54" size="1.778" layer="95" rot="R90" xref="yes"/>
+</segment>
+<segment>
+<pinref part="U$7" gate="G$1" pin="EN"/>
+<wire x1="223.52" y1="276.86" x2="228.6" y2="276.86" width="0.1524" layer="91"/>
+<label x="228.6" y="276.86" size="1.778" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="VCC" class="0">
