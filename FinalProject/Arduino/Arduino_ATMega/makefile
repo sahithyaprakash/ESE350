@@ -3,7 +3,7 @@ name = output
 device = /dev/tty.usbmodem1411 
 #Sahithya
 #device = /dev/tty.usbmodem1451 
-src = ../Sensor_Test_1/main.c
+src = ../Sensor_Code/main.c
 flags = -std=c11 -Os -O1
 baud = 9600
 
@@ -17,18 +17,18 @@ link_printf = #default
 all : build program clean
 
 build: $(src)
-	avr-gcc $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL -mmcu=atmega328p \
+	avr-gcc $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL -mmcu=atmega32u4 \
     $(link_printf) -o $(name).elf $(src)
 	avr-objcopy -O ihex -R .eeprom $(name).elf $(name).ihex
 	rm $(name).elf
 
 list: $(src)
 	avr-gcc -c -g -Wa,-a,-ad $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL \
-    -mmcu=atmega328p $(src) > $(name).lst
+    -mmcu=atmega32u4 $(src) > $(name).lst
 	rm $(name).elf
 
 program: build
-	avrdude -F -V -c arduino -p ATMEGA328P -P $(device) -b 115200 \
+	avrdude -F -V -c arduino -p ATMEGA32U4 -P $(device) -b 115200 \
     -U flash:w:$(name).ihex
 
 clean:
