@@ -17,7 +17,7 @@
 #define MUX_SEL_LVL2_BIT0 PORTB1
 #define MUX_SEL_LVL2_BIT1 PORTB3
 #define MUX_SEL_LVL2_BIT2 PORTB6
-#define MUX_SEL_LVL2_BIT3 //NONE
+#define MUX_SEL_LVL2_BIT3 PORTB7 //NOT CORRECT
 
 #define INPUT_PIN PINF0
 
@@ -118,7 +118,7 @@ int main (void) {
 		unsigned int current;
 		double conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
-		for (column = 0x00; column < 7; column ++) {
+		for (unsigned int column = 0x00; column < 7; column ++) {
 			switchPowerToColumnNumber(column);
 			for (current = 0x00; current <= 0x57; current ++) {
 				if (current == 0x00) {
@@ -126,6 +126,7 @@ int main (void) {
 				}
 				switchMuxesToHeight(current);
 
+				unsigned int a = 0x00;
 				while (a < 0xFF) {
 					a++;
 				}

@@ -28,7 +28,7 @@ list: $(src)
 	rm $(name).elf
 
 program: build
-	avrdude -F -V -c arduino -p ATMEGA32U4 -P $(device) -b 115200 \
+	avrdude -F -V -c arduino -p atmega32u4 -P $(device) -b 115200 \
     -U flash:w:$(name).ihex
 
 clean:
