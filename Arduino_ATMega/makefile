@@ -1,16 +1,8 @@
 name = output
 #Phillip
-#device = /dev/tty.usbmodem1421 
-#Sahithya
-<<<<<<< Updated upstream
-#device = /dev/tty.usbmodem1451 
-src = ../part1.c
-flags = -std=c11 -Os -S
-=======
-device = /dev/tty.usbmodem1451 
+device = /dev/tty.usbmodem1421 
 src = ../Stacks/program.c
 flags = -std=c11 -Os -O1
->>>>>>> Stashed changes
 baud = 9600
 
 printf_min = -Wl,-u,vfprintf -lprintf_min #only int/string support
@@ -34,7 +26,7 @@ list: $(src)
 	rm $(name).elf
 
 program: build
-	avrdude -F -V -c arduino -p ATMEGA328P -P $(device) -b 115200 \
+	avrdude -v -v -v -v -F -V -c arduino -p ATMEGA328P -P $(device) -b 115200 \
     -U flash:w:$(name).ihex
 
 clean:

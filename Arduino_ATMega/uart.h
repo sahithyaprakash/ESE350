@@ -12,8 +12,9 @@ FILE uart_out = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 FILE uart_in = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
 
 void uart_init() {
-    UBRR0H = UBRRH_VALUE;
-    UBRR0L = UBRRL_VALUE;
+
+    UBRRH0 = UBRRH_VALUE;
+    UBRRL0 = UBRRL_VALUE;
             
     #if USE_2X
     UCSR0A |= _BV(U2X0);
@@ -23,6 +24,8 @@ void uart_init() {
     
     UCSR0C = _BV(UCSZ01) | _BV(UCSZ00); /* 8-bit data */ 
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);   /* Enable RX and TX */
+    UCSR1B = _BV(RXEN1) | _BV(TXEN1);   /* Enable RX and TX */
+
 
     stdout = &uart_out;
     stdin = &uart_in;

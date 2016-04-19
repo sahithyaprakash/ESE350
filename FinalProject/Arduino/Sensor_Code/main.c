@@ -17,7 +17,7 @@
 #define MUX_SEL_LVL2_BIT0 PORTB1
 #define MUX_SEL_LVL2_BIT1 PORTB3
 #define MUX_SEL_LVL2_BIT2 PORTB6
-#define MUX_SEL_LVL2_BIT3 PORTB7 //NOT CORRECT
+#define MUX_SEL_LVL2_BIT3 PORTB7
 
 #define INPUT_PIN PINF0
 
@@ -57,8 +57,8 @@ void switchPowerToColumnNumber(int columnNumber) {
 
 	//update the value to the new register value
 	PWR_SEL_REG_NEW = setOnlyBitInRegisterToValue(PWR_SEL_REG_NEW, PWR_SEL_0, (columnNumber & 0x01));
-	PWR_SEL_REG_NEW = setOnlyBitInRegisterToValue(PWR_SEL_REG_NEW, PWR_SEL_1, (columnNumber & 0x02 >> 1));
-	PWR_SEL_REG_NEW = setOnlyBitInRegisterToValue(PWR_SEL_REG_NEW, PWR_SEL_2, (columnNumber & 0x04 >> 2));
+	PWR_SEL_REG_NEW = setOnlyBitInRegisterToValue(PWR_SEL_REG_NEW, PWR_SEL_1, ((columnNumber & 0x02) >> 1));
+	PWR_SEL_REG_NEW = setOnlyBitInRegisterToValue(PWR_SEL_REG_NEW, PWR_SEL_2, ((columnNumber & 0x04) >> 2));
 
 	//set the register value (only happens once)
 	PWR_SEL_REG = PWR_SEL_REG_NEW;
@@ -71,9 +71,9 @@ void switchMuxesToHeight(int height) {
 
 	//set the new values to the given values (height)
 	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT0, (height & 0x01));
-	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT1, (height & 0x02 >> 1));
-	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT2, (height & 0x04 >> 2));
-	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT3, (height & 0x08 >> 3));
+	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT1, ((height & 0x02) >> 1));
+	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT2, ((height & 0x04) >> 2));
+	MUX_SEL_LVL1_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL1_REG_NEW, MUX_SEL_LVL1_BIT3, ((height & 0x08) >> 3));
 
 	//set the register (only happens once)
 	MUX_SEL_LVL1_REG = MUX_SEL_LVL1_REG_NEW;
@@ -82,10 +82,10 @@ void switchMuxesToHeight(int height) {
 	unsigned int MUX_SEL_LVL2_REG_NEW = MUX_SEL_LVL2_REG;
 
 	//set the new values to the given ones (height)
-	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT0, (height & 0x10));
-	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT1, (height & 0x20 >> 1));
-	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT2, (height & 0x40 >> 2));
-	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT3, (height & 0x08 >> 3));
+	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT0, ((height & 0x10) >> 4));
+	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT1, ((height & 0x20) >> 5));
+	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT2, ((height & 0x40) >> 6));
+	MUX_SEL_LVL2_REG_NEW = setOnlyBitInRegisterToValue(MUX_SEL_LVL2_REG_NEW, MUX_SEL_LVL2_BIT3, ((height & 0x80) >> 7));
 
 	//set the register (only happens once)
 	MUX_SEL_LVL2_REG = MUX_SEL_LVL2_REG_NEW;
@@ -120,7 +120,7 @@ int main (void) {
 		float liquidAmt = 0x00;
 		for (unsigned int column = 0x00; column < 7; column ++) {
 			switchPowerToColumnNumber(column);
-			for (current = 0x00; current <= 0x57; current ++) {
+			for (current = 0x00; current <= 0xA9; current ++) {
 				if (current == 0x00) {
 					conductingVoltage = getConductivity();
 				}
