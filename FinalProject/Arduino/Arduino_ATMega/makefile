@@ -1,6 +1,6 @@
 name = output
 #Phillip
-device = /dev/tty.usbmodem1411 
+device = /dev/tty.usbmodem1421 
 #Sahithya
 #device = /dev/tty.usbmodem1451 
 src = ../Sensor_Code/main.c

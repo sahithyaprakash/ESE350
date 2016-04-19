@@ -24,7 +24,6 @@ void uart_init() {
     
     UCSR0C = _BV(UCSZ01) | _BV(UCSZ00); /* 8-bit data */ 
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);   /* Enable RX and TX */
-    UCSR1B = _BV(RXEN1) | _BV(TXEN1);   /* Enable RX and TX */
 
 
     stdout = &uart_out;

@@ -136,7 +136,6 @@ int main (void) {
 				}
 			}
 			liquidAmt = liquidAmount(highest_conductor);
-
 			printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
 			printf(" | %d mL ", liquidAmt);
 			printf(" | %d V \n", conductingVoltage);
