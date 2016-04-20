@@ -2,24 +2,25 @@
 #include <avr/io.h>
 #include "../Arduino_ATMega/uart.h"
 
-#define PWR_SEL_REG PORTF
-#define PWR_SEL_0 PORTF5
-#define PWR_SEL_1 PORTF6
-#define PWR_SEL_2 PORTF7
+#define PWR_SEL_REG PORTD
+#define PWR_SEL_0 PORTD2
+#define PWR_SEL_1 PORTD3
+#define PWR_SEL_2 PORTD4
 
-#define MUX_SEL_LVL1_REG PORTD
-#define MUX_SEL_LVL1_BIT0 PORTD0
-#define MUX_SEL_LVL1_BIT1 PORTD1
-#define MUX_SEL_LVL1_BIT2 PORTD4
-#define MUX_SEL_LVL1_BIT3 PORTD6
+#define MUX_SEL_LVL1_REG PORTC
+#define MUX_SEL_LVL1_BIT0 PORTC0
+#define MUX_SEL_LVL1_BIT1 PORTC1
+#define MUX_SEL_LVL1_BIT2 PORTC2
+#define MUX_SEL_LVL1_BIT3 PORTC3
 
 #define MUX_SEL_LVL2_REG PORTB
-#define MUX_SEL_LVL2_BIT0 PORTB1
+#define MUX_SEL_LVL2_BIT0 PORTB2
 #define MUX_SEL_LVL2_BIT1 PORTB3
-#define MUX_SEL_LVL2_BIT2 PORTB6
-#define MUX_SEL_LVL2_BIT3 PORTB7
+#define MUX_SEL_LVL2_BIT2 PORTB4
+#define MUX_SEL_LVL2_BIT3 PORTB5
 
-#define INPUT_PIN PINF0
+#define INPUT_PIN PINC4
+#define INPUT_PIN_REG DDRC
 
 
 // Calculates the amount of liquid in a single column (mL)
@@ -28,6 +29,11 @@ float liquidAmount(int heighestConductor) {
 	if (heighestConductor > 0) {
 		float actuationDepth = 2.5;
 		float unitVolume = 3.175;
+		printf("actuation: %f \n", actuationDepth);
+		printf("unitVolume: %f \n", unitVolume);
+		printf("first: %d \n", (heighestConductor - 1) * unitVolume);
+		printf("second: %u \n", actuationDepth + (heighestConductor - 1) * unitVolume);
+
 		return actuationDepth + (heighestConductor - 1) * unitVolume;
 	} else {
 		return 0;
@@ -108,37 +114,35 @@ int main (void) {
 
 	// set registers to outputs
 	DDRB = 0xFF;
+	DDRC = 0xEF; //all outputs except for pin 4
 	DDRD = 0xFF;
-	DDRF = 0xFF;
 
 
 
 	while (1) {
 		unsigned int highest_conductor = 0x00;
 		unsigned int current;
-		double conductingVoltage = 0x00;
+		float conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
 		for (unsigned int column = 0x00; column < 7; column ++) {
 			switchPowerToColumnNumber(column);
-			for (current = 0x00; current <= 0xA9; current ++) {
+			for (current = 0x00; current < 0xA9; current ++) {
 				if (current == 0x00) {
 					conductingVoltage = getConductivity();
 				}
 				switchMuxesToHeight(current);
 
-				unsigned int a = 0x00;
-				while (a < 0xFF) {
-					a++;
-				}
+				//wait for a little bit
+				for(unsigned int a = 0x00; a < 0xFF; a ++);
 
-				if (INPUT_PIN == 0x01) {
+				if (((INPUT_PIN_REG >> (INPUT_PIN - 1)) & 0x01) == 0x01) {
 					highest_conductor = current + 1;
 				}
 			}
 			liquidAmt = liquidAmount(highest_conductor);
 			printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
-			printf(" | %d mL ", liquidAmt);
-			printf(" | %d V \n", conductingVoltage);
+			printf(" | %u mL ", liquidAmt);
+			printf(" | %u V \n", conductingVoltage);
 
 			highest_conductor = 0x00;
 		}
