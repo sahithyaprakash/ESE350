@@ -1,6 +1,9 @@
 #include <unistd.h>
 #include <avr/io.h>
 #include "../Arduino_ATMega/uart.h"
+#include "../ST7565-LCD/c/glcd.h"
+#include "../ST7565-LCD/c/stlcd.h"
+
 
 #define PWR_SEL_REG PORTD
 #define PWR_SEL_0 PORTD2
@@ -21,7 +24,6 @@
 
 #define INPUT_PIN PINC4
 #define INPUT_PIN_REG DDRC
-
 
 // Calculates the amount of liquid in a single column (mL)
 // from the height of the liquid in number of coducting datapoints
@@ -117,6 +119,11 @@ int main (void) {
 	DDRC = 0xEF; //all outputs except for pin 4
 	DDRD = 0xFF;
 
+	uint8_t x = 0x00;
+	uint8_t y = 0x00;
+	uint8_t color = 0xFF;
+
+
 
 
 	while (1) {
@@ -125,6 +132,9 @@ int main (void) {
 		float conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
 		for (unsigned int column = 0x00; column < 7; column ++) {
+
+			setpixel(buffer, x, y, color);
+
 			switchPowerToColumnNumber(column);
 			for (current = 0x00; current < 0xA9; current ++) {
 				if (current == 0x00) {
