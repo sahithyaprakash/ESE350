@@ -1,6 +1,6 @@
 name = output
 device = /dev/tty.usbmodem1411
-lcd_makefile = ../ST7565-LCD/c/stlcd.*
+lcd_src = ../ST7565-LCD/c/*.o
 src = ../Sensor_Code/main.c
 flags = -std=c11 -Os
 baud = 9600
@@ -12,15 +12,15 @@ link_printf = #default
 #link_printf = $(printf_min)
 #link_printf = $(printf_float)
 
-all: $(lcd_makefile) build program clean
+all: $(lcd_src) build program clean
 
-build: $(lcd_makefile) $(src)
+build: $(lcd_src) $(src)
 	avr-gcc $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL -mmcu=atmega328p \
-    $(link_printf) -o $(name).elf $(src)
+    $(link_printf) -o $(name).elf $(lcd_src) $(src)
 	avr-objcopy -O ihex -R .eeprom $(name).elf $(name).ihex
 	rm $(name).elf
 
-list: $(lcd_makefile) $(src)
+list: $(lcd_src) $(src)
 	avr-gcc -c -g -Wa,-a,-ad $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL \
     -mmcu=atmega328p $(src) > $(name).lst
 	rm $(name).elf
