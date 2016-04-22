@@ -117,7 +117,7 @@ int main (void) {
 	uint8_t color = 0;
 
 	uart_inits();
-	//setupADC();
+	setupADC();
 
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
 
@@ -166,7 +166,7 @@ int main (void) {
 			switchPowerToColumnNumber(column);
 			for (current = 0x00; current < 0xA9; current ++) {
 				if (current == 0x00) {
-					//conductingVoltage = getConductivity();
+					conductingVoltage = getConductivity();
 				}
 				switchMuxesToHeight(current);
 
@@ -177,10 +177,10 @@ int main (void) {
 					highest_conductor = current + 1;
 				}
 			}
-			//liquidAmt = liquidAmount(highest_conductor);
+			liquidAmt = liquidAmount(highest_conductor);
 			printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
-			// printf(" | %u mL ", liquidAmt);
-			// printf(" | %u V \n", conductingVoltage);
+			printf(" | %u mL ", liquidAmt);
+			printf(" | %u V \n", conductingVoltage);
 
 			highest_conductor = 0x00;
 		}
