@@ -2686,23 +2686,23 @@
  2781               		.ident	"GCC: (GNU) 4.9.3"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 glcd.c
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:5      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:6      *ABS*:0000000000000001 __zero_reg__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:118    .text:0000000000000000 setpixel
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:218    .text:0000000000000070 drawbitmap
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:392    .text:000000000000015a drawchar
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1501   .progmem.data:0000000000000000 font
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:468    .text:000000000000019c drawstring
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:545    .text:00000000000001e8 clearpixel
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:599    .text:0000000000000220 drawline
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:804    .text:00000000000002f4 fillrect
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:904    .text:000000000000035c drawrect
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1035   .text:00000000000003fa drawcircle
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1240   .text:0000000000000512 fillcircle
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1473   .text:0000000000000624 clear_buffer
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:118    .text:0000000000000000 setpixel
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:218    .text:0000000000000070 drawbitmap
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:392    .text:000000000000015a drawchar
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:1501   .progmem.data:0000000000000000 font
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:468    .text:000000000000019c drawstring
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:545    .text:00000000000001e8 clearpixel
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:599    .text:0000000000000220 drawline
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:804    .text:00000000000002f4 fillrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:904    .text:000000000000035c drawrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:1035   .text:00000000000003fa drawcircle
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:1240   .text:0000000000000512 fillcircle
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccS2n9e3.s:1473   .text:0000000000000624 clear_buffer
 
 UNDEFINED SYMBOLS
 uart_putchar

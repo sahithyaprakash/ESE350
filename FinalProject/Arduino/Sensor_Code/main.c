@@ -23,7 +23,7 @@
 #define MUX_SEL_LVL2_BIT3 PORTB5
 
 #define INPUT_PIN PINC4
-#define INPUT_PIN_REG DDRC
+#define INPUT_PIN_REG PINC
 
 
 
@@ -117,13 +117,13 @@ int main (void) {
 	uint8_t color = 0;
 
 	uart_inits();
-	setupADC();
+	//setupADC();
 
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
 
 	// set registers to outputs
 	DDRB = 0xFD;
-	DDRC = 0xEF; //all outputs except for pin 4
+	DDRC = 0xEF; //a/ll outputs except for pin 4
 	DDRD = 0xFF;
 
 	setup();
@@ -166,19 +166,19 @@ int main (void) {
 			switchPowerToColumnNumber(column);
 			for (current = 0x00; current < 0xA9; current ++) {
 				if (current == 0x00) {
-					conductingVoltage = getConductivity();
+					//conductingVoltage = getConductivity();
 				}
 				switchMuxesToHeight(current);
 
 				//wait for a little bit
 				for (unsigned int a = 0x00; a < 0xFF; a ++);
 
-				if (((INPUT_PIN_REG >> (INPUT_PIN - 1)) & 0x01) == 0x01) {
+				if ((INPUT_PIN_REG & _BV(INPUT_PIN)) > 0x00) {
 					highest_conductor = current + 1;
 				}
 			}
-			liquidAmt = liquidAmount(highest_conductor);
-			// printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
+			//liquidAmt = liquidAmount(highest_conductor);
+			printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
 			// printf(" | %u mL ", liquidAmt);
 			// printf(" | %u V \n", conductingVoltage);
 
