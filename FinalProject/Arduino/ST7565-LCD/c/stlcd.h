@@ -42,7 +42,6 @@ void spiwrite(uint8_t c);
 
 void setup(void);
 
-
 void st7565_init(void);
 void st7565_command(uint8_t c);
 void st7565_data(uint8_t c);
@@ -52,6 +51,7 @@ void st7565_set_brightness(uint8_t val);
 void clear_screen(void);
 void clear_buffer(uint8_t *buffer);
 void write_buffer(uint8_t *buffer);
+uint8_t* get_buffer(void);
 
 void testdrawbitmap(uint8_t *buff, const uint8_t *bitmap, uint8_t w, uint8_t h);
 

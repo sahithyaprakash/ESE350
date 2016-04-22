@@ -12,7 +12,7 @@ link_printf = #default
 #link_printf = $(printf_min)
 #link_printf = $(printf_float)
 
-all: $(lcd_src) build program clean
+all: build program
 
 build: $(lcd_src) $(src)
 	avr-gcc $(flags) -DBAUD=$(baud) -DF_CPU=16000000UL -mmcu=atmega328p \
@@ -31,3 +31,7 @@ program: build
 
 clean:
 	rm -f $(name).ihex $(name).lst
+	(cd ../ST7565-LCD/c && make clean)
+
+library: 
+	(cd ../ST7565-LCD/c && make all)

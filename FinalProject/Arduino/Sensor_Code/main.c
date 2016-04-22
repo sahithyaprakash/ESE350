@@ -25,16 +25,18 @@
 #define INPUT_PIN PINC4
 #define INPUT_PIN_REG DDRC
 
+
+
 // Calculates the amount of liquid in a single column (mL)
 // from the height of the liquid in number of coducting datapoints
 float liquidAmount(int heighestConductor) {
 	if (heighestConductor > 0) {
 		float actuationDepth = 2.5;
 		float unitVolume = 3.175;
-		printf("actuation: %f \n", actuationDepth);
-		printf("unitVolume: %f \n", unitVolume);
-		printf("first: %d \n", (heighestConductor - 1) * unitVolume);
-		printf("second: %u \n", actuationDepth + (heighestConductor - 1) * unitVolume);
+		// printf("actuation: %f \n", actuationDepth);
+		// printf("unitVolume: %f \n", unitVolume);
+		// printf("first: %d \n", (heighestConductor - 1) * unitVolume);
+		// printf("second: %u \n", actuationDepth + (heighestConductor - 1) * unitVolume);
 
 		return actuationDepth + (heighestConductor - 1) * unitVolume;
 	} else {
@@ -45,7 +47,7 @@ float liquidAmount(int heighestConductor) {
 double getConductivity() {
 	//start ADC read
 	ADCSRA |= (1 << ADSC);
-	while((ADCSRA & (1 << ADIF)) != (1 << ADIF));
+	while ((ADCSRA & (1 << ADIF)) != (1 << ADIF));
 	double analogValue = ((double) 1 / (double) 0xFF) * ADC;
 	return analogValue;
 }
@@ -105,7 +107,7 @@ void setupADC() {
 	ADMUX |= 0x05; 		// set which channel we want to read from (PIN A5)
 	ADCSRA = 0xE0; 		// enables the adc and starts the conversions and enables auto trigger
 	ADCSRA |= 0x07; 	// sets the clock prescalser to 128
-	ADCSRB = 0x00; 		// free running mode (always taking sample) 
+	ADCSRB = 0x00; 		// free running mode (always taking sample)
 }
 
 int main (void) {
@@ -120,9 +122,39 @@ int main (void) {
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
 
 	// set registers to outputs
-	DDRB = 0xFF;
+	DDRB = 0xFD;
 	DDRC = 0xEF; //all outputs except for pin 4
 	DDRD = 0xFF;
+
+	setup();
+	uint8_t* buffer = get_buffer();
+
+	int shift = 100;
+	int padding = 6;
+	clear_buffer(buffer);
+	drawchar(buffer, shift + 0 * padding, 0, 'M');
+	drawchar(buffer, shift + 1 * padding, 0, 'e');
+	drawchar(buffer, shift + 2 * padding, 0, 'n');
+	drawchar(buffer, shift + 3 * padding, 0, 'u');
+
+	drawchar(buffer, shift + 0 * padding, 1, 'D');
+	drawchar(buffer, shift + 1 * padding, 1, 'i');
+	drawchar(buffer, shift + 2 * padding, 1, 's');
+	drawchar(buffer, shift + 3 * padding, 1, 'p');
+
+	drawchar(buffer, 0 * padding, 0, 'H');
+	drawchar(buffer, 1 * padding, 0, 'I');
+	drawchar(buffer, 2 * padding, 0, 'S');
+	drawchar(buffer, 3 * padding, 0, 'T');
+	drawchar(buffer, 4 * padding, 0, 'O');
+	drawchar(buffer, 5 * padding, 0, 'G');
+	drawchar(buffer, 6 * padding, 0, 'R');
+	drawchar(buffer, 7 * padding, 0, 'A');
+	drawchar(buffer, 8 * padding, 0, 'M');
+
+
+	write_buffer(buffer);
+
 
 	while (1) {
 		unsigned int highest_conductor = 0x00;
@@ -130,10 +162,7 @@ int main (void) {
 		float conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
 
-
 		for (unsigned int column = 0x00; column < 7; column ++) {
-
-
 			switchPowerToColumnNumber(column);
 			for (current = 0x00; current < 0xA9; current ++) {
 				if (current == 0x00) {
@@ -142,19 +171,19 @@ int main (void) {
 				switchMuxesToHeight(current);
 
 				//wait for a little bit
-				for(unsigned int a = 0x00; a < 0xFF; a ++);
+				for (unsigned int a = 0x00; a < 0xFF; a ++);
 
 				if (((INPUT_PIN_REG >> (INPUT_PIN - 1)) & 0x01) == 0x01) {
 					highest_conductor = current + 1;
 				}
 			}
 			liquidAmt = liquidAmount(highest_conductor);
-			printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
-			printf(" | %u mL ", liquidAmt);
-			printf(" | %u V \n", conductingVoltage);
+			// printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
+			// printf(" | %u mL ", liquidAmt);
+			// printf(" | %u V \n", conductingVoltage);
 
 			highest_conductor = 0x00;
 		}
-		
+
 	}
 }

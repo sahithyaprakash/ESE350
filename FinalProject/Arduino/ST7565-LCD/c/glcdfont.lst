@@ -1,0 +1,19 @@
+   1               		.file	"glcdfont.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 108               	.Letext0:
+ 109               		.ident	"GCC: (GNU) 4.9.3"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 glcdfont.c
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccYTPght.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccYTPght.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccYTPght.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccYTPght.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccYTPght.s:6      *ABS*:0000000000000001 __zero_reg__
+
+NO UNDEFINED SYMBOLS

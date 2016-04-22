@@ -1,0 +1,2708 @@
+   1               		.file	"glcd.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 116               	.global	setpixel
+ 118               	setpixel:
+ 119               		.stabd	46,0,0
+   1:glcd.c        **** /*
+   2:glcd.c        **** $Id:$
+   3:glcd.c        **** 
+   4:glcd.c        **** ST7565 LCD library!
+   5:glcd.c        **** 
+   6:glcd.c        **** Copyright (C) 2010 Limor Fried, Adafruit Industries
+   7:glcd.c        **** 
+   8:glcd.c        **** This library is free software; you can redistribute it and/or
+   9:glcd.c        **** modify it under the terms of the GNU Lesser General Public
+  10:glcd.c        **** License as published by the Free Software Foundation; either
+  11:glcd.c        **** version 2.1 of the License, or (at your option) any later version.
+  12:glcd.c        **** 
+  13:glcd.c        **** This library is distributed in the hope that it will be useful,
+  14:glcd.c        **** but WITHOUT ANY WARRANTY; without even the implied warranty of
+  15:glcd.c        **** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  16:glcd.c        **** Lesser General Public License for more details.
+  17:glcd.c        **** 
+  18:glcd.c        **** You should have received a copy of the GNU Lesser General Public
+  19:glcd.c        **** License along with this library; if not, write to the Free Software
+  20:glcd.c        **** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+  21:glcd.c        **** */
+  22:glcd.c        **** 
+  23:glcd.c        **** #include <avr/io.h>
+  24:glcd.c        **** #include <stdlib.h>
+  25:glcd.c        **** #include <avr/pgmspace.h> 
+  26:glcd.c        **** #include "util.h"
+  27:glcd.c        **** #include "glcd.h"
+  28:glcd.c        **** #include "glcdfont.c"
+  29:glcd.c        **** 
+  30:glcd.c        **** extern const unsigned int PROGMEM font[];
+  31:glcd.c        **** 
+  32:glcd.c        **** // the most basic function, set a single pixel
+  33:glcd.c        **** void setpixel(uint8_t *buff, uint8_t x, uint8_t y, uint8_t color) {
+ 121               	.LM0:
+ 122               	.LFBB1:
+ 123               	/* prologue: function */
+ 124               	/* frame size = 0 */
+ 125               	/* stack size = 0 */
+ 126               	.L__stack_usage = 0
+  34:glcd.c        ****   if ((x >= LCDWIDTH) || (y >= LCDHEIGHT))
+ 128               	.LM1:
+ 129 0000 67FD      		sbrc r22,7
+ 130 0002 00C0      		rjmp .L1
+ 132               	.LM2:
+ 133 0004 4034      		cpi r20,lo8(64)
+ 134 0006 00F4      		brsh .L1
+ 135 0008 342F      		mov r19,r20
+ 136 000a 3695      		lsr r19
+ 137 000c 3695      		lsr r19
+ 138 000e 3695      		lsr r19
+ 139 0010 70E0      		ldi r23,0
+ 140 0012 50E0      		ldi r21,0
+  35:glcd.c        ****     return;
+  36:glcd.c        **** 
+  37:glcd.c        ****   // x is which column
+  38:glcd.c        ****   if (color) 
+ 142               	.LM3:
+ 143 0014 2223      		tst r18
+ 144 0016 01F0      		breq .L3
+ 145               	.LBB4:
+ 146               	.LBB5:
+  39:glcd.c        ****     buff[x+ (y/8)*128] |= _BV(7-(y%8));  
+ 148               	.LM4:
+ 149 0018 20E8      		ldi r18,lo8(-128)
+ 150 001a 329F      		mul r19,r18
+ 151 001c 600D      		add r22,r0
+ 152 001e 711D      		adc r23,r1
+ 153 0020 1124      		clr __zero_reg__
+ 154 0022 FC01      		movw r30,r24
+ 155 0024 E60F      		add r30,r22
+ 156 0026 F71F      		adc r31,r23
+ 157 0028 4095      		com r20
+ 158 002a 5095      		com r21
+ 159 002c 4770      		andi r20,7
+ 160 002e 5527      		clr r21
+ 161 0030 81E0      		ldi r24,lo8(1)
+ 162 0032 90E0      		ldi r25,0
+ 163 0034 00C0      		rjmp 2f
+ 164               		1:
+ 165 0036 880F      		lsl r24
+ 166               		2:
+ 167 0038 4A95      		dec r20
+ 168 003a 02F4      		brpl 1b
+ 169 003c 9081      		ld r25,Z
+ 170 003e 892B      		or r24,r25
+ 171 0040 00C0      		rjmp .L4
+ 172               	.L3:
+ 173               	.LBE5:
+ 174               	.LBE4:
+  40:glcd.c        ****   else
+  41:glcd.c        ****     buff[x+ (y/8)*128] &= ~_BV(7-(y%8)); 
+ 176               	.LM5:
+ 177 0042 20E8      		ldi r18,lo8(-128)
+ 178 0044 329F      		mul r19,r18
+ 179 0046 600D      		add r22,r0
+ 180 0048 711D      		adc r23,r1
+ 181 004a 1124      		clr __zero_reg__
+ 182 004c FC01      		movw r30,r24
+ 183 004e E60F      		add r30,r22
+ 184 0050 F71F      		adc r31,r23
+ 185 0052 4095      		com r20
+ 186 0054 5095      		com r21
+ 187 0056 4770      		andi r20,7
+ 188 0058 5527      		clr r21
+ 189 005a 81E0      		ldi r24,lo8(1)
+ 190 005c 90E0      		ldi r25,0
+ 191 005e 00C0      		rjmp 2f
+ 192               		1:
+ 193 0060 880F      		lsl r24
+ 194               		2:
+ 195 0062 4A95      		dec r20
+ 196 0064 02F4      		brpl 1b
+ 197 0066 8095      		com r24
+ 198 0068 9081      		ld r25,Z
+ 199 006a 8923      		and r24,r25
+ 200               	.L4:
+ 201 006c 8083      		st Z,r24
+ 202               	.L1:
+ 203 006e 0895      		ret
+ 205               	.Lscope1:
+ 207               		.stabd	78,0,0
+ 216               	.global	drawbitmap
+ 218               	drawbitmap:
+ 219               		.stabd	46,0,0
+  42:glcd.c        **** }
+  43:glcd.c        **** 
+  44:glcd.c        **** void drawbitmap(uint8_t *buff, uint8_t x, uint8_t y, 
+  45:glcd.c        **** 		const uint8_t bitmap, uint8_t w, uint8_t h,
+  46:glcd.c        **** 		uint8_t color) {
+ 221               	.LM6:
+ 222               	.LFBB2:
+ 223 0070 2F92      		push r2
+ 224 0072 3F92      		push r3
+ 225 0074 4F92      		push r4
+ 226 0076 5F92      		push r5
+ 227 0078 6F92      		push r6
+ 228 007a 7F92      		push r7
+ 229 007c 8F92      		push r8
+ 230 007e 9F92      		push r9
+ 231 0080 AF92      		push r10
+ 232 0082 BF92      		push r11
+ 233 0084 CF92      		push r12
+ 234 0086 DF92      		push r13
+ 235 0088 EF92      		push r14
+ 236 008a FF92      		push r15
+ 237 008c 0F93      		push r16
+ 238 008e 1F93      		push r17
+ 239 0090 CF93      		push r28
+ 240 0092 DF93      		push r29
+ 241 0094 00D0      		rcall .
+ 242 0096 00D0      		rcall .
+ 243 0098 1F92      		push __zero_reg__
+ 244 009a CDB7      		in r28,__SP_L__
+ 245 009c DEB7      		in r29,__SP_H__
+ 246               	/* prologue: function */
+ 247               	/* frame size = 5 */
+ 248               	/* stack size = 23 */
+ 249               	.L__stack_usage = 23
+ 250 009e 1C01      		movw r2,r24
+ 251 00a0 562F      		mov r21,r22
+ 252 00a2 342F      		mov r19,r20
+ 253 00a4 D02E      		mov r13,r16
+ 254               	.LBB6:
+  47:glcd.c        ****   for (uint8_t j=0; j<h; j++) {
+ 256               	.LM7:
+ 257 00a6 F12C      		mov r15,__zero_reg__
+ 258 00a8 4424      		clr r4
+ 259 00aa 4394      		inc r4
+ 260 00ac 512C      		mov r5,__zero_reg__
+ 261 00ae 10E0      		ldi r17,0
+ 262 00b0 A22E      		mov r10,r18
+ 263 00b2 B12C      		mov r11,__zero_reg__
+ 264               	.L7:
+ 266               	.LM8:
+ 267 00b4 FE14      		cp r15,r14
+ 268 00b6 01F0      		breq .L6
+ 269               	.LBB7:
+  48:glcd.c        ****     for (uint8_t i=0; i<w; i++ ) {
+  49:glcd.c        ****       if (pgm_read_byte(bitmap + i + (j/8)*w) & _BV(j%8)) {
+ 271               	.LM9:
+ 272 00b8 8F2D      		mov r24,r15
+ 273 00ba 8770      		andi r24,lo8(7)
+ 274 00bc 3201      		movw r6,r4
+ 275 00be 00C0      		rjmp 2f
+ 276               		1:
+ 277 00c0 660C      		lsl r6
+ 278 00c2 771C      		rol r7
+ 279               		2:
+ 280 00c4 8A95      		dec r24
+ 281 00c6 02F4      		brpl 1b
+ 282 00c8 1D82      		std Y+5,__zero_reg__
+ 283 00ca 1C82      		std Y+4,__zero_reg__
+ 284 00cc 8F2D      		mov r24,r15
+ 285 00ce 8695      		lsr r24
+ 286 00d0 8695      		lsr r24
+ 287 00d2 8695      		lsr r24
+ 288 00d4 4501      		movw r8,r10
+ 289 00d6 8D9D      		mul r24,r13
+ 290 00d8 800C      		add r8,r0
+ 291 00da 911C      		adc r9,r1
+ 292 00dc 1124      		clr __zero_reg__
+ 293 00de 7F2D      		mov r23,r15
+ 294 00e0 730F      		add r23,r19
+ 295               	.L11:
+  48:glcd.c        ****     for (uint8_t i=0; i<w; i++ ) {
+ 297               	.LM10:
+ 298 00e2 8C81      		ldd r24,Y+4
+ 299 00e4 9D81      		ldd r25,Y+5
+ 300 00e6 8017      		cp r24,r16
+ 301 00e8 9107      		cpc r25,r17
+ 302 00ea 01F0      		breq .L15
+ 303 00ec EC81      		ldd r30,Y+4
+ 304 00ee FD81      		ldd r31,Y+5
+ 305 00f0 E80D      		add r30,r8
+ 306 00f2 F91D      		adc r31,r9
+ 307               	.LBB8:
+ 309               	.LM11:
+ 310               	/* #APP */
+ 311               	 ;  49 "glcd.c" 1
+ 312 00f4 E491      		lpm r30, Z
+ 313               		
+ 314               	 ;  0 "" 2
+ 315               	/* #NOAPP */
+ 316               	.LBE8:
+ 317 00f6 F0E0      		ldi r31,0
+ 318 00f8 E621      		and r30,r6
+ 319 00fa F721      		and r31,r7
+ 320 00fc EF2B      		or r30,r31
+ 321 00fe 01F0      		breq .L8
+  50:glcd.c        **** 	setpixel(buff, x+i, y+j, color);
+ 323               	.LM12:
+ 324 0100 2C2D      		mov r18,r12
+ 325 0102 472F      		mov r20,r23
+ 326 0104 6C81      		ldd r22,Y+4
+ 327 0106 650F      		add r22,r21
+ 328 0108 C101      		movw r24,r2
+ 329 010a 3A83      		std Y+2,r19
+ 330 010c 5983      		std Y+1,r21
+ 331 010e 7B83      		std Y+3,r23
+ 332 0110 0E94 0000 		call setpixel
+ 333 0114 7B81      		ldd r23,Y+3
+ 334 0116 5981      		ldd r21,Y+1
+ 335 0118 3A81      		ldd r19,Y+2
+ 336               	.L8:
+ 337 011a 8C81      		ldd r24,Y+4
+ 338 011c 9D81      		ldd r25,Y+5
+ 339 011e 0196      		adiw r24,1
+ 340 0120 9D83      		std Y+5,r25
+ 341 0122 8C83      		std Y+4,r24
+ 342 0124 00C0      		rjmp .L11
+ 343               	.L15:
+ 344               	.LBE7:
+  47:glcd.c        ****   for (uint8_t j=0; j<h; j++) {
+ 346               	.LM13:
+ 347 0126 F394      		inc r15
+ 348 0128 00C0      		rjmp .L7
+ 349               	.L6:
+ 350               	/* epilogue start */
+ 351               	.LBE6:
+  51:glcd.c        ****       }
+  52:glcd.c        ****     }
+  53:glcd.c        ****   }
+  54:glcd.c        **** 
+  55:glcd.c        **** 
+  56:glcd.c        **** }
+ 353               	.LM14:
+ 354 012a 0F90      		pop __tmp_reg__
+ 355 012c 0F90      		pop __tmp_reg__
+ 356 012e 0F90      		pop __tmp_reg__
+ 357 0130 0F90      		pop __tmp_reg__
+ 358 0132 0F90      		pop __tmp_reg__
+ 359 0134 DF91      		pop r29
+ 360 0136 CF91      		pop r28
+ 361 0138 1F91      		pop r17
+ 362 013a 0F91      		pop r16
+ 363 013c FF90      		pop r15
+ 364 013e EF90      		pop r14
+ 365 0140 DF90      		pop r13
+ 366 0142 CF90      		pop r12
+ 367 0144 BF90      		pop r11
+ 368 0146 AF90      		pop r10
+ 369 0148 9F90      		pop r9
+ 370 014a 8F90      		pop r8
+ 371 014c 7F90      		pop r7
+ 372 014e 6F90      		pop r6
+ 373 0150 5F90      		pop r5
+ 374 0152 4F90      		pop r4
+ 375 0154 3F90      		pop r3
+ 376 0156 2F90      		pop r2
+ 377 0158 0895      		ret
+ 382               	.Lscope2:
+ 384               		.stabd	78,0,0
+ 390               	.global	drawchar
+ 392               	drawchar:
+ 393               		.stabd	46,0,0
+  57:glcd.c        **** 
+  58:glcd.c        **** void drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c) {
+  59:glcd.c        ****   while (c[0] != 0) {
+  60:glcd.c        ****     uart_putchar(c[0]);
+  61:glcd.c        ****     drawchar(buff, x, line, c[0]);
+  62:glcd.c        ****     c++;
+  63:glcd.c        ****     x += 6; // 6 pixels wide
+  64:glcd.c        ****     if (x + 6 >= LCDWIDTH) {
+  65:glcd.c        ****       x = 0;    // ran out of this line
+  66:glcd.c        ****       line++;
+  67:glcd.c        ****     }
+  68:glcd.c        ****     if (line >= (LCDHEIGHT/8))
+  69:glcd.c        ****       return;        // ran out of space :(
+  70:glcd.c        ****   }
+  71:glcd.c        **** 
+  72:glcd.c        **** }
+  73:glcd.c        **** 
+  74:glcd.c        **** void drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c) {
+ 395               	.LM15:
+ 396               	.LFBB3:
+ 397 015a CF93      		push r28
+ 398 015c DF93      		push r29
+ 399               	/* prologue: function */
+ 400               	/* frame size = 0 */
+ 401               	/* stack size = 2 */
+ 402               	.L__stack_usage = 2
+ 403               	.LBB9:
+ 404               	.LBB10:
+  75:glcd.c        ****   for (uint8_t i =0; i<5; i++ ) {
+  76:glcd.c        ****     buff[x + (line*128) ] = pgm_read_byte(font+(c*5)+i);
+ 406               	.LM16:
+ 407 015e 55E0      		ldi r21,lo8(5)
+ 408 0160 259F      		mul r18,r21
+ 409 0162 9001      		movw r18,r0
+ 410 0164 1124      		clr __zero_reg__
+ 411 0166 220F      		lsl r18
+ 412 0168 331F      		rol r19
+ 413 016a A0E0      		ldi r26,0
+ 414 016c B0E0      		ldi r27,0
+ 415               	.LBE10:
+ 416 016e 50E8      		ldi r21,lo8(-128)
+ 417 0170 459F      		mul r20,r21
+ 418 0172 800D      		add r24,r0
+ 419 0174 911D      		adc r25,r1
+ 420 0176 1124      		clr __zero_reg__
+ 421               	.L17:
+ 422 0178 FD01      		movw r30,r26
+ 423 017a E20F      		add r30,r18
+ 424 017c F31F      		adc r31,r19
+ 425 017e E050      		subi r30,lo8(-(font))
+ 426 0180 F040      		sbci r31,hi8(-(font))
+ 427               	.LBB11:
+ 429               	.LM17:
+ 430               	/* #APP */
+ 431               	 ;  76 "glcd.c" 1
+ 432 0182 E491      		lpm r30, Z
+ 433               		
+ 434               	 ;  0 "" 2
+ 435               	/* #NOAPP */
+ 436               	.LBE11:
+ 437 0184 EC01      		movw r28,r24
+ 438 0186 C60F      		add r28,r22
+ 439 0188 D11D      		adc r29,__zero_reg__
+ 440 018a E883      		st Y,r30
+  77:glcd.c        ****     x++;
+ 442               	.LM18:
+ 443 018c 6F5F      		subi r22,lo8(-(1))
+ 444 018e 1296      		adiw r26,2
+  75:glcd.c        ****   for (uint8_t i =0; i<5; i++ ) {
+ 446               	.LM19:
+ 447 0190 AA30      		cpi r26,10
+ 448 0192 B105      		cpc r27,__zero_reg__
+ 449 0194 01F4      		brne .L17
+ 450               	/* epilogue start */
+ 451               	.LBE9:
+  78:glcd.c        ****   }
+  79:glcd.c        **** }
+ 453               	.LM20:
+ 454 0196 DF91      		pop r29
+ 455 0198 CF91      		pop r28
+ 456 019a 0895      		ret
+ 458               	.Lscope3:
+ 460               		.stabd	78,0,0
+ 466               	.global	drawstring
+ 468               	drawstring:
+ 469               		.stabd	46,0,0
+  58:glcd.c        ****   while (c[0] != 0) {
+ 471               	.LM21:
+ 472               	.LFBB4:
+ 473 019c EF92      		push r14
+ 474 019e FF92      		push r15
+ 475 01a0 0F93      		push r16
+ 476 01a2 1F93      		push r17
+ 477 01a4 CF93      		push r28
+ 478 01a6 DF93      		push r29
+ 479               	/* prologue: function */
+ 480               	/* frame size = 0 */
+ 481               	/* stack size = 6 */
+ 482               	.L__stack_usage = 6
+ 483 01a8 7C01      		movw r14,r24
+ 484 01aa C62F      		mov r28,r22
+ 485 01ac D42F      		mov r29,r20
+ 486 01ae 8901      		movw r16,r18
+ 487               	.L20:
+  59:glcd.c        ****     uart_putchar(c[0]);
+ 489               	.LM22:
+ 490 01b0 F801      		movw r30,r16
+ 491 01b2 8081      		ld r24,Z
+ 492 01b4 8823      		tst r24
+ 493 01b6 01F0      		breq .L19
+  60:glcd.c        ****     drawchar(buff, x, line, c[0]);
+ 495               	.LM23:
+ 496 01b8 0E94 0000 		call uart_putchar
+  61:glcd.c        ****     c++;
+ 498               	.LM24:
+ 499 01bc F801      		movw r30,r16
+ 500 01be 2191      		ld r18,Z+
+ 501 01c0 8F01      		movw r16,r30
+ 502 01c2 4D2F      		mov r20,r29
+ 503 01c4 6C2F      		mov r22,r28
+ 504 01c6 C701      		movw r24,r14
+ 505 01c8 0E94 0000 		call drawchar
+  63:glcd.c        ****     if (x + 6 >= LCDWIDTH) {
+ 507               	.LM25:
+ 508 01cc CA5F      		subi r28,lo8(-(6))
+  64:glcd.c        ****       x = 0;    // ran out of this line
+ 510               	.LM26:
+ 511 01ce CA37      		cpi r28,lo8(122)
+ 512 01d0 00F0      		brlo .L21
+  66:glcd.c        ****     }
+ 514               	.LM27:
+ 515 01d2 DF5F      		subi r29,lo8(-(1))
+  65:glcd.c        ****       line++;
+ 517               	.LM28:
+ 518 01d4 C0E0      		ldi r28,0
+ 519               	.L21:
+  68:glcd.c        ****       return;        // ran out of space :(
+ 521               	.LM29:
+ 522 01d6 D830      		cpi r29,lo8(8)
+ 523 01d8 00F0      		brlo .L20
+ 524               	.L19:
+ 525               	/* epilogue start */
+  72:glcd.c        **** 
+ 527               	.LM30:
+ 528 01da DF91      		pop r29
+ 529 01dc CF91      		pop r28
+ 530 01de 1F91      		pop r17
+ 531 01e0 0F91      		pop r16
+ 532 01e2 FF90      		pop r15
+ 533 01e4 EF90      		pop r14
+ 534 01e6 0895      		ret
+ 536               	.Lscope4:
+ 538               		.stabd	78,0,0
+ 543               	.global	clearpixel
+ 545               	clearpixel:
+ 546               		.stabd	46,0,0
+  80:glcd.c        **** 
+  81:glcd.c        **** // the most basic function, clear a single pixel
+  82:glcd.c        **** void clearpixel(uint8_t *buff, uint8_t x, uint8_t y) {
+ 548               	.LM31:
+ 549               	.LFBB5:
+ 550               	/* prologue: function */
+ 551               	/* frame size = 0 */
+ 552               	/* stack size = 0 */
+ 553               	.L__stack_usage = 0
+  83:glcd.c        ****   // x is which column
+  84:glcd.c        ****   buff[x+ (y/8)*128] &= ~_BV(7-(y%8));
+ 555               	.LM32:
+ 556 01e8 E42F      		mov r30,r20
+ 557 01ea E695      		lsr r30
+ 558 01ec E695      		lsr r30
+ 559 01ee E695      		lsr r30
+ 560 01f0 20E8      		ldi r18,lo8(-128)
+ 561 01f2 E29F      		mul r30,r18
+ 562 01f4 F001      		movw r30,r0
+ 563 01f6 1124      		clr __zero_reg__
+ 564 01f8 E60F      		add r30,r22
+ 565 01fa F11D      		adc r31,__zero_reg__
+ 566 01fc E80F      		add r30,r24
+ 567 01fe F91F      		adc r31,r25
+ 568 0200 50E0      		ldi r21,0
+ 569 0202 4095      		com r20
+ 570 0204 5095      		com r21
+ 571 0206 4770      		andi r20,7
+ 572 0208 5527      		clr r21
+ 573 020a 81E0      		ldi r24,lo8(1)
+ 574 020c 90E0      		ldi r25,0
+ 575 020e 00C0      		rjmp 2f
+ 576               		1:
+ 577 0210 880F      		lsl r24
+ 578               		2:
+ 579 0212 4A95      		dec r20
+ 580 0214 02F4      		brpl 1b
+ 581 0216 8095      		com r24
+ 582 0218 9081      		ld r25,Z
+ 583 021a 8923      		and r24,r25
+ 584 021c 8083      		st Z,r24
+ 585 021e 0895      		ret
+ 587               	.Lscope5:
+ 589               		.stabd	78,0,0
+ 597               	.global	drawline
+ 599               	drawline:
+ 600               		.stabd	46,0,0
+  85:glcd.c        **** }
+  86:glcd.c        **** 
+  87:glcd.c        **** // bresenham's algorithm - thx wikpedia
+  88:glcd.c        **** void drawline(uint8_t *buff,
+  89:glcd.c        **** 	      uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, 
+  90:glcd.c        **** 	      uint8_t color) {
+ 602               	.LM33:
+ 603               	.LFBB6:
+ 604 0220 9F92      		push r9
+ 605 0222 AF92      		push r10
+ 606 0224 BF92      		push r11
+ 607 0226 CF92      		push r12
+ 608 0228 DF92      		push r13
+ 609 022a EF92      		push r14
+ 610 022c FF92      		push r15
+ 611 022e 0F93      		push r16
+ 612 0230 1F93      		push r17
+ 613 0232 CF93      		push r28
+ 614 0234 DF93      		push r29
+ 615               	/* prologue: function */
+ 616               	/* frame size = 0 */
+ 617               	/* stack size = 11 */
+ 618               	.L__stack_usage = 11
+ 619 0236 6C01      		movw r12,r24
+ 620 0238 C62F      		mov r28,r22
+ 621 023a D42F      		mov r29,r20
+ 622 023c 122F      		mov r17,r18
+  91:glcd.c        **** 
+  92:glcd.c        ****   uint8_t steep = abs(y1 - y0) > abs(x1 - x0);
+ 624               	.LM34:
+ 625 023e 402F      		mov r20,r16
+ 626 0240 50E0      		ldi r21,0
+ 627 0242 4D1B      		sub r20,r29
+ 628 0244 5109      		sbc r21,__zero_reg__
+ 629 0246 57FF      		sbrs r21,7
+ 630 0248 00C0      		rjmp .L27
+ 631 024a 5195      		neg r21
+ 632 024c 4195      		neg r20
+ 633 024e 5109      		sbc r21,__zero_reg__
+ 634               	.L27:
+ 635 0250 812F      		mov r24,r17
+ 636 0252 90E0      		ldi r25,0
+ 637 0254 8C1B      		sub r24,r28
+ 638 0256 9109      		sbc r25,__zero_reg__
+ 639 0258 97FF      		sbrs r25,7
+ 640 025a 00C0      		rjmp .L28
+ 641 025c 9195      		neg r25
+ 642 025e 8195      		neg r24
+ 643 0260 9109      		sbc r25,__zero_reg__
+ 644               	.L28:
+ 645 0262 AA24      		clr r10
+ 646 0264 A394      		inc r10
+ 647 0266 8417      		cp r24,r20
+ 648 0268 9507      		cpc r25,r21
+ 649 026a 04F0      		brlt .L41
+ 650 026c A12C      		mov r10,__zero_reg__
+ 651 026e 00C0      		rjmp .L30
+ 652               	.L41:
+  93:glcd.c        ****   if (steep) {
+ 654               	.LM35:
+ 655 0270 812F      		mov r24,r17
+ 656               	.LBB12:
+  94:glcd.c        ****     swap(x0, y0);
+  95:glcd.c        ****     swap(x1, y1);
+ 658               	.LM36:
+ 659 0272 102F      		mov r17,r16
+ 660 0274 082F      		mov r16,r24
+ 661               	.LBE12:
+  93:glcd.c        ****   if (steep) {
+ 663               	.LM37:
+ 664 0276 8C2F      		mov r24,r28
+ 665               	.LBB13:
+  94:glcd.c        ****     swap(x0, y0);
+ 667               	.LM38:
+ 668 0278 CD2F      		mov r28,r29
+ 669 027a D82F      		mov r29,r24
+ 670               	.L30:
+ 671               	.LBE13:
+  96:glcd.c        ****   }
+  97:glcd.c        **** 
+  98:glcd.c        ****   if (x0 > x1) {
+ 673               	.LM39:
+ 674 027c 1C17      		cp r17,r28
+ 675 027e 00F4      		brsh .L31
+ 676 0280 8D2F      		mov r24,r29
+ 677               	.LBB14:
+  99:glcd.c        ****     swap(x0, x1);
+ 100:glcd.c        ****     swap(y0, y1);
+ 679               	.LM40:
+ 680 0282 D02F      		mov r29,r16
+ 681 0284 082F      		mov r16,r24
+ 682               	.LBE14:
+  98:glcd.c        ****     swap(x0, x1);
+ 684               	.LM41:
+ 685 0286 8C2F      		mov r24,r28
+ 686 0288 C12F      		mov r28,r17
+ 687 028a 182F      		mov r17,r24
+ 688               	.L31:
+ 101:glcd.c        ****   }
+ 102:glcd.c        **** 
+ 103:glcd.c        ****   uint8_t dx, dy;
+ 104:glcd.c        ****   dx = x1 - x0;
+ 690               	.LM42:
+ 691 028c 912E      		mov r9,r17
+ 692 028e 9C1A      		sub r9,r28
+ 105:glcd.c        ****   dy = abs(y1 - y0);
+ 694               	.LM43:
+ 695 0290 402F      		mov r20,r16
+ 696 0292 50E0      		ldi r21,0
+ 697 0294 4D1B      		sub r20,r29
+ 698 0296 5109      		sbc r21,__zero_reg__
+ 699 0298 57FF      		sbrs r21,7
+ 700 029a 00C0      		rjmp .L32
+ 701 029c 5195      		neg r21
+ 702 029e 4195      		neg r20
+ 703 02a0 5109      		sbc r21,__zero_reg__
+ 704               	.L32:
+ 705 02a2 F42E      		mov r15,r20
+ 106:glcd.c        **** 
+ 107:glcd.c        ****   int8_t err = dx / 2;
+ 707               	.LM44:
+ 708 02a4 B92C      		mov r11,r9
+ 709 02a6 B694      		lsr r11
+ 108:glcd.c        ****   int8_t ystep;
+ 109:glcd.c        **** 
+ 110:glcd.c        ****   if (y0 < y1) {
+ 711               	.LM45:
+ 712 02a8 D017      		cp r29,r16
+ 713 02aa 00F0      		brlo .L39
+ 111:glcd.c        ****     ystep = 1;
+ 112:glcd.c        ****   } else {
+ 113:glcd.c        ****     ystep = -1;}
+ 715               	.LM46:
+ 716 02ac 0FEF      		ldi r16,lo8(-1)
+ 717 02ae 00C0      		rjmp .L34
+ 718               	.L39:
+ 111:glcd.c        ****     ystep = 1;
+ 720               	.LM47:
+ 721 02b0 01E0      		ldi r16,lo8(1)
+ 722 02b2 00C0      		rjmp .L34
+ 723               	.L38:
+ 114:glcd.c        **** 
+ 115:glcd.c        ****   for (; x0<x1; x0++) {
+ 116:glcd.c        ****     if (steep) {
+ 117:glcd.c        ****       setpixel(buff, y0, x0, color);
+ 725               	.LM48:
+ 726 02b4 2E2D      		mov r18,r14
+ 116:glcd.c        ****       setpixel(buff, y0, x0, color);
+ 728               	.LM49:
+ 729 02b6 AA20      		tst r10
+ 730 02b8 01F0      		breq .L35
+ 732               	.LM50:
+ 733 02ba 4C2F      		mov r20,r28
+ 734 02bc 6D2F      		mov r22,r29
+ 735               	.L42:
+ 118:glcd.c        ****     } else {
+ 119:glcd.c        ****       setpixel(buff, x0, y0, color);
+ 737               	.LM51:
+ 738 02be C601      		movw r24,r12
+ 739 02c0 0E94 0000 		call setpixel
+ 120:glcd.c        ****     }
+ 121:glcd.c        ****     err -= dy;
+ 741               	.LM52:
+ 742 02c4 BF18      		sub r11,r15
+ 122:glcd.c        ****     if (err < 0) {
+ 744               	.LM53:
+ 745 02c6 B7FE      		sbrs r11,7
+ 746 02c8 00C0      		rjmp .L37
+ 123:glcd.c        ****       y0 += ystep;
+ 748               	.LM54:
+ 749 02ca D00F      		add r29,r16
+ 124:glcd.c        ****       err += dx;
+ 751               	.LM55:
+ 752 02cc B90C      		add r11,r9
+ 753               	.L37:
+ 115:glcd.c        ****     if (steep) {
+ 755               	.LM56:
+ 756 02ce CF5F      		subi r28,lo8(-(1))
+ 757               	.L34:
+ 115:glcd.c        ****     if (steep) {
+ 759               	.LM57:
+ 760 02d0 C117      		cp r28,r17
+ 761 02d2 00F0      		brlo .L38
+ 762 02d4 00C0      		rjmp .L43
+ 763               	.L35:
+ 119:glcd.c        ****     }
+ 765               	.LM58:
+ 766 02d6 4D2F      		mov r20,r29
+ 767 02d8 6C2F      		mov r22,r28
+ 768 02da 00C0      		rjmp .L42
+ 769               	.L43:
+ 770               	/* epilogue start */
+ 125:glcd.c        ****     }
+ 126:glcd.c        ****   }
+ 127:glcd.c        **** }
+ 772               	.LM59:
+ 773 02dc DF91      		pop r29
+ 774 02de CF91      		pop r28
+ 775 02e0 1F91      		pop r17
+ 776 02e2 0F91      		pop r16
+ 777 02e4 FF90      		pop r15
+ 778 02e6 EF90      		pop r14
+ 779 02e8 DF90      		pop r13
+ 780 02ea CF90      		pop r12
+ 781 02ec BF90      		pop r11
+ 782 02ee AF90      		pop r10
+ 783 02f0 9F90      		pop r9
+ 784 02f2 0895      		ret
+ 792               	.Lscope6:
+ 794               		.stabd	78,0,0
+ 802               	.global	fillrect
+ 804               	fillrect:
+ 805               		.stabd	46,0,0
+ 128:glcd.c        **** 
+ 129:glcd.c        **** // filled rectangle
+ 130:glcd.c        **** void fillrect(uint8_t *buff,
+ 131:glcd.c        **** 	      uint8_t x, uint8_t y, uint8_t w, uint8_t h, 
+ 132:glcd.c        **** 	      uint8_t color) {
+ 807               	.LM60:
+ 808               	.LFBB7:
+ 809 02f4 AF92      		push r10
+ 810 02f6 BF92      		push r11
+ 811 02f8 CF92      		push r12
+ 812 02fa DF92      		push r13
+ 813 02fc EF92      		push r14
+ 814 02fe FF92      		push r15
+ 815 0300 0F93      		push r16
+ 816 0302 1F93      		push r17
+ 817 0304 CF93      		push r28
+ 818 0306 DF93      		push r29
+ 819               	/* prologue: function */
+ 820               	/* frame size = 0 */
+ 821               	/* stack size = 10 */
+ 822               	.L__stack_usage = 10
+ 823 0308 5C01      		movw r10,r24
+ 824 030a F42E      		mov r15,r20
+ 825               	.LBB15:
+ 133:glcd.c        **** 
+ 134:glcd.c        ****   // stupidest version - just pixels - but fast with internal buffer!
+ 135:glcd.c        ****   for (uint8_t i=x; i<x+w; i++) {
+ 827               	.LM61:
+ 828 030c C62F      		mov r28,r22
+ 829 030e C22E      		mov r12,r18
+ 830 0310 D12C      		mov r13,__zero_reg__
+ 831 0312 C60E      		add r12,r22
+ 832 0314 D11C      		adc r13,__zero_reg__
+ 833               	.LBB16:
+ 136:glcd.c        ****     for (uint8_t j=y; j<y+h; j++) {
+ 835               	.LM62:
+ 836 0316 10E0      		ldi r17,0
+ 837 0318 040F      		add r16,r20
+ 838 031a 111D      		adc r17,__zero_reg__
+ 839               	.L45:
+ 840               	.LBE16:
+ 135:glcd.c        ****     for (uint8_t j=y; j<y+h; j++) {
+ 842               	.LM63:
+ 843 031c 8C2F      		mov r24,r28
+ 844 031e 90E0      		ldi r25,0
+ 845 0320 8C15      		cp r24,r12
+ 846 0322 9D05      		cpc r25,r13
+ 847 0324 04F4      		brge .L44
+ 848 0326 DF2D      		mov r29,r15
+ 849               	.L48:
+ 850               	.LBB17:
+ 852               	.LM64:
+ 853 0328 8D2F      		mov r24,r29
+ 854 032a 90E0      		ldi r25,0
+ 855 032c 8017      		cp r24,r16
+ 856 032e 9107      		cpc r25,r17
+ 857 0330 04F4      		brge .L49
+ 137:glcd.c        ****       setpixel(buff, i, j, color);
+ 859               	.LM65:
+ 860 0332 2E2D      		mov r18,r14
+ 861 0334 4D2F      		mov r20,r29
+ 862 0336 6C2F      		mov r22,r28
+ 863 0338 C501      		movw r24,r10
+ 864 033a 0E94 0000 		call setpixel
+ 136:glcd.c        ****     for (uint8_t j=y; j<y+h; j++) {
+ 866               	.LM66:
+ 867 033e DF5F      		subi r29,lo8(-(1))
+ 868 0340 00C0      		rjmp .L48
+ 869               	.L49:
+ 870               	.LBE17:
+ 135:glcd.c        ****     for (uint8_t j=y; j<y+h; j++) {
+ 872               	.LM67:
+ 873 0342 CF5F      		subi r28,lo8(-(1))
+ 874 0344 00C0      		rjmp .L45
+ 875               	.L44:
+ 876               	/* epilogue start */
+ 877               	.LBE15:
+ 138:glcd.c        ****     }
+ 139:glcd.c        ****   }
+ 140:glcd.c        **** }
+ 879               	.LM68:
+ 880 0346 DF91      		pop r29
+ 881 0348 CF91      		pop r28
+ 882 034a 1F91      		pop r17
+ 883 034c 0F91      		pop r16
+ 884 034e FF90      		pop r15
+ 885 0350 EF90      		pop r14
+ 886 0352 DF90      		pop r13
+ 887 0354 CF90      		pop r12
+ 888 0356 BF90      		pop r11
+ 889 0358 AF90      		pop r10
+ 890 035a 0895      		ret
+ 892               	.Lscope7:
+ 894               		.stabd	78,0,0
+ 902               	.global	drawrect
+ 904               	drawrect:
+ 905               		.stabd	46,0,0
+ 141:glcd.c        **** 
+ 142:glcd.c        **** 
+ 143:glcd.c        **** // draw a rectangle
+ 144:glcd.c        **** void drawrect(uint8_t *buff,
+ 145:glcd.c        **** 	      uint8_t x, uint8_t y, uint8_t w, uint8_t h, 
+ 146:glcd.c        **** 	      uint8_t color) {
+ 907               	.LM69:
+ 908               	.LFBB8:
+ 909 035c 9F92      		push r9
+ 910 035e AF92      		push r10
+ 911 0360 BF92      		push r11
+ 912 0362 CF92      		push r12
+ 913 0364 DF92      		push r13
+ 914 0366 EF92      		push r14
+ 915 0368 FF92      		push r15
+ 916 036a 0F93      		push r16
+ 917 036c 1F93      		push r17
+ 918 036e CF93      		push r28
+ 919 0370 DF93      		push r29
+ 920               	/* prologue: function */
+ 921               	/* frame size = 0 */
+ 922               	/* stack size = 11 */
+ 923               	.L__stack_usage = 11
+ 924 0372 6C01      		movw r12,r24
+ 925 0374 F62E      		mov r15,r22
+ 926 0376 C42F      		mov r28,r20
+ 927 0378 D22F      		mov r29,r18
+ 928               	.LBB18:
+ 147:glcd.c        ****   // stupidest version - just pixels - but fast with internal buffer!
+ 148:glcd.c        ****   for (uint8_t i=x; i<x+w; i++) {
+ 930               	.LM70:
+ 931 037a 162F      		mov r17,r22
+ 932 037c A22E      		mov r10,r18
+ 933 037e B12C      		mov r11,__zero_reg__
+ 934 0380 A60E      		add r10,r22
+ 935 0382 B11C      		adc r11,__zero_reg__
+ 936 0384 9924      		clr r9
+ 937 0386 9A94      		dec r9
+ 938 0388 900E      		add r9,r16
+ 149:glcd.c        ****     setpixel(buff, i, y, color);
+ 150:glcd.c        ****     setpixel(buff, i, y+h-1, color);
+ 940               	.LM71:
+ 941 038a 940E      		add r9,r20
+ 942               	.L51:
+ 148:glcd.c        ****     setpixel(buff, i, y, color);
+ 944               	.LM72:
+ 945 038c 812F      		mov r24,r17
+ 946 038e 90E0      		ldi r25,0
+ 947 0390 8A15      		cp r24,r10
+ 948 0392 9B05      		cpc r25,r11
+ 949 0394 04F4      		brge .L55
+ 149:glcd.c        ****     setpixel(buff, i, y, color);
+ 951               	.LM73:
+ 952 0396 2E2D      		mov r18,r14
+ 953 0398 4C2F      		mov r20,r28
+ 954 039a 612F      		mov r22,r17
+ 955 039c C601      		movw r24,r12
+ 956 039e 0E94 0000 		call setpixel
+ 958               	.LM74:
+ 959 03a2 2E2D      		mov r18,r14
+ 960 03a4 492D      		mov r20,r9
+ 961 03a6 612F      		mov r22,r17
+ 962 03a8 C601      		movw r24,r12
+ 963 03aa 0E94 0000 		call setpixel
+ 148:glcd.c        ****     setpixel(buff, i, y, color);
+ 965               	.LM75:
+ 966 03ae 1F5F      		subi r17,lo8(-(1))
+ 967 03b0 00C0      		rjmp .L51
+ 968               	.L55:
+ 969               	.LBE18:
+ 970               	.LBB19:
+ 151:glcd.c        ****   }
+ 152:glcd.c        ****   for (uint8_t i=y; i<y+h; i++) {
+ 972               	.LM76:
+ 973 03b2 10E0      		ldi r17,0
+ 974 03b4 0C0F      		add r16,r28
+ 975 03b6 111D      		adc r17,__zero_reg__
+ 976 03b8 D150      		subi r29,lo8(-(-1))
+ 153:glcd.c        ****     setpixel(buff, x, i, color);
+ 154:glcd.c        ****     setpixel(buff, x+w-1, i, color);
+ 978               	.LM77:
+ 979 03ba DF0D      		add r29,r15
+ 980               	.L53:
+ 152:glcd.c        ****     setpixel(buff, x, i, color);
+ 982               	.LM78:
+ 983 03bc 8C2F      		mov r24,r28
+ 984 03be 90E0      		ldi r25,0
+ 985 03c0 8017      		cp r24,r16
+ 986 03c2 9107      		cpc r25,r17
+ 987 03c4 04F4      		brge .L56
+ 153:glcd.c        ****     setpixel(buff, x, i, color);
+ 989               	.LM79:
+ 990 03c6 2E2D      		mov r18,r14
+ 991 03c8 4C2F      		mov r20,r28
+ 992 03ca 6F2D      		mov r22,r15
+ 993 03cc C601      		movw r24,r12
+ 994 03ce 0E94 0000 		call setpixel
+ 996               	.LM80:
+ 997 03d2 2E2D      		mov r18,r14
+ 998 03d4 4C2F      		mov r20,r28
+ 999 03d6 6D2F      		mov r22,r29
+ 1000 03d8 C601      		movw r24,r12
+ 1001 03da 0E94 0000 		call setpixel
+ 152:glcd.c        ****     setpixel(buff, x, i, color);
+ 1003               	.LM81:
+ 1004 03de CF5F      		subi r28,lo8(-(1))
+ 1005 03e0 00C0      		rjmp .L53
+ 1006               	.L56:
+ 1007               	/* epilogue start */
+ 1008               	.LBE19:
+ 155:glcd.c        ****   } 
+ 156:glcd.c        **** }
+ 1010               	.LM82:
+ 1011 03e2 DF91      		pop r29
+ 1012 03e4 CF91      		pop r28
+ 1013 03e6 1F91      		pop r17
+ 1014 03e8 0F91      		pop r16
+ 1015 03ea FF90      		pop r15
+ 1016 03ec EF90      		pop r14
+ 1017 03ee DF90      		pop r13
+ 1018 03f0 CF90      		pop r12
+ 1019 03f2 BF90      		pop r11
+ 1020 03f4 AF90      		pop r10
+ 1021 03f6 9F90      		pop r9
+ 1022 03f8 0895      		ret
+ 1024               	.Lscope8:
+ 1026               		.stabd	78,0,0
+ 1033               	.global	drawcircle
+ 1035               	drawcircle:
+ 1036               		.stabd	46,0,0
+ 157:glcd.c        **** 
+ 158:glcd.c        **** 
+ 159:glcd.c        **** // draw a circle
+ 160:glcd.c        **** void drawcircle(uint8_t *buff,
+ 161:glcd.c        **** 	      uint8_t x0, uint8_t y0, uint8_t r, 
+ 162:glcd.c        **** 	      uint8_t color) {
+ 1038               	.LM83:
+ 1039               	.LFBB9:
+ 1040 03fa 8F92      		push r8
+ 1041 03fc 9F92      		push r9
+ 1042 03fe AF92      		push r10
+ 1043 0400 BF92      		push r11
+ 1044 0402 CF92      		push r12
+ 1045 0404 DF92      		push r13
+ 1046 0406 EF92      		push r14
+ 1047 0408 FF92      		push r15
+ 1048 040a 0F93      		push r16
+ 1049 040c 1F93      		push r17
+ 1050 040e CF93      		push r28
+ 1051 0410 DF93      		push r29
+ 1052               	/* prologue: function */
+ 1053               	/* frame size = 0 */
+ 1054               	/* stack size = 12 */
+ 1055               	.L__stack_usage = 12
+ 1056 0412 7C01      		movw r14,r24
+ 1057 0414 A62E      		mov r10,r22
+ 1058 0416 942E      		mov r9,r20
+ 163:glcd.c        ****   int8_t f = 1 - r;
+ 1060               	.LM84:
+ 1061 0418 11E0      		ldi r17,lo8(1)
+ 1062 041a 121B      		sub r17,r18
+ 164:glcd.c        ****   int8_t ddF_x = 1;
+ 165:glcd.c        ****   int8_t ddF_y = -2 * r;
+ 1064               	.LM85:
+ 1065 041c D22E      		mov r13,r18
+ 1066 041e D194      		neg r13
+ 1067 0420 DD0C      		lsl r13
+ 166:glcd.c        ****   int8_t x = 0;
+ 167:glcd.c        ****   int8_t y = r;
+ 1069               	.LM86:
+ 1070 0422 C22F      		mov r28,r18
+ 168:glcd.c        **** 
+ 169:glcd.c        ****   setpixel(buff, x0, y0+r, color);
+ 1072               	.LM87:
+ 1073 0424 422F      		mov r20,r18
+ 1074 0426 490D      		add r20,r9
+ 1075 0428 202F      		mov r18,r16
+ 1076 042a 0E94 0000 		call setpixel
+ 170:glcd.c        ****   setpixel(buff, x0, y0-r, color);
+ 1078               	.LM88:
+ 1079 042e 492D      		mov r20,r9
+ 1080 0430 4C1B      		sub r20,r28
+ 1081 0432 202F      		mov r18,r16
+ 1082 0434 6A2D      		mov r22,r10
+ 1083 0436 C701      		movw r24,r14
+ 1084 0438 0E94 0000 		call setpixel
+ 171:glcd.c        ****   setpixel(buff, x0+r, y0, color);
+ 1086               	.LM89:
+ 1087 043c 6C2F      		mov r22,r28
+ 1088 043e 6A0D      		add r22,r10
+ 1089 0440 202F      		mov r18,r16
+ 1090 0442 492D      		mov r20,r9
+ 1091 0444 C701      		movw r24,r14
+ 1092 0446 0E94 0000 		call setpixel
+ 172:glcd.c        ****   setpixel(buff, x0-r, y0, color);
+ 1094               	.LM90:
+ 1095 044a 6A2D      		mov r22,r10
+ 1096 044c 6C1B      		sub r22,r28
+ 1097 044e 202F      		mov r18,r16
+ 1098 0450 492D      		mov r20,r9
+ 1099 0452 C701      		movw r24,r14
+ 1100 0454 0E94 0000 		call setpixel
+ 166:glcd.c        ****   int8_t y = r;
+ 1102               	.LM91:
+ 1103 0458 D0E0      		ldi r29,0
+ 1104               	.L58:
+ 173:glcd.c        **** 
+ 174:glcd.c        ****   while (x<y) {
+ 1106               	.LM92:
+ 1107 045a DC17      		cp r29,r28
+ 1108 045c 04F0      		brlt .+2
+ 1109 045e 00C0      		rjmp .L61
+ 175:glcd.c        ****     if (f >= 0) {
+ 1111               	.LM93:
+ 1112 0460 17FD      		sbrc r17,7
+ 1113 0462 00C0      		rjmp .L59
+ 176:glcd.c        ****       y--;
+ 1115               	.LM94:
+ 1116 0464 C150      		subi r28,lo8(-(-1))
+ 177:glcd.c        ****       ddF_y += 2;
+ 1118               	.LM95:
+ 1119 0466 D394      		inc r13
+ 1120 0468 D394      		inc r13
+ 178:glcd.c        ****       f += ddF_y;
+ 1122               	.LM96:
+ 1123 046a 1D0D      		add r17,r13
+ 1124               	.L59:
+ 1125 046c DF5F      		subi r29,lo8(-(1))
+ 1126 046e 8D2F      		mov r24,r29
+ 1127 0470 880F      		lsl r24
+ 1128 0472 8F5F      		subi r24,lo8(-(1))
+ 179:glcd.c        ****     }
+ 180:glcd.c        ****     x++;
+ 181:glcd.c        ****     ddF_x += 2;
+ 182:glcd.c        ****     f += ddF_x;
+ 1130               	.LM97:
+ 1131 0474 180F      		add r17,r24
+ 1132 0476 8D2E      		mov r8,r29
+ 1133 0478 8A0C      		add r8,r10
+ 183:glcd.c        ****   
+ 184:glcd.c        ****     setpixel(buff, x0 + x, y0 + y, color);
+ 1135               	.LM98:
+ 1136 047a 202F      		mov r18,r16
+ 1137 047c CC2E      		mov r12,r28
+ 1138 047e C90C      		add r12,r9
+ 1139 0480 4C2D      		mov r20,r12
+ 1140 0482 682D      		mov r22,r8
+ 1141 0484 C701      		movw r24,r14
+ 1142 0486 0E94 0000 		call setpixel
+ 1143 048a BA2C      		mov r11,r10
+ 1144 048c BD1A      		sub r11,r29
+ 185:glcd.c        ****     setpixel(buff, x0 - x, y0 + y, color);
+ 1146               	.LM99:
+ 1147 048e 202F      		mov r18,r16
+ 1148 0490 4C2D      		mov r20,r12
+ 1149 0492 6B2D      		mov r22,r11
+ 1150 0494 C701      		movw r24,r14
+ 1151 0496 0E94 0000 		call setpixel
+ 186:glcd.c        ****     setpixel(buff, x0 + x, y0 - y, color);
+ 1153               	.LM100:
+ 1154 049a 202F      		mov r18,r16
+ 1155 049c C92C      		mov r12,r9
+ 1156 049e CC1A      		sub r12,r28
+ 1157 04a0 4C2D      		mov r20,r12
+ 1158 04a2 682D      		mov r22,r8
+ 1159 04a4 C701      		movw r24,r14
+ 1160 04a6 0E94 0000 		call setpixel
+ 187:glcd.c        ****     setpixel(buff, x0 - x, y0 - y, color);
+ 1162               	.LM101:
+ 1163 04aa 202F      		mov r18,r16
+ 1164 04ac 4C2D      		mov r20,r12
+ 1165 04ae 6B2D      		mov r22,r11
+ 1166 04b0 C701      		movw r24,r14
+ 1167 04b2 0E94 0000 		call setpixel
+ 1168 04b6 CD2E      		mov r12,r29
+ 1169 04b8 C90C      		add r12,r9
+ 188:glcd.c        ****     
+ 189:glcd.c        ****     setpixel(buff, x0 + y, y0 + x, color);
+ 1171               	.LM102:
+ 1172 04ba 202F      		mov r18,r16
+ 1173 04bc 4C2D      		mov r20,r12
+ 1174 04be BC2E      		mov r11,r28
+ 1175 04c0 BA0C      		add r11,r10
+ 1176 04c2 6B2D      		mov r22,r11
+ 1177 04c4 C701      		movw r24,r14
+ 1178 04c6 0E94 0000 		call setpixel
+ 190:glcd.c        ****     setpixel(buff, x0 - y, y0 + x, color);
+ 1180               	.LM103:
+ 1181 04ca 202F      		mov r18,r16
+ 1182 04cc 4C2D      		mov r20,r12
+ 1183 04ce CA2C      		mov r12,r10
+ 1184 04d0 CC1A      		sub r12,r28
+ 1185 04d2 6C2D      		mov r22,r12
+ 1186 04d4 C701      		movw r24,r14
+ 1187 04d6 0E94 0000 		call setpixel
+ 1188 04da 892C      		mov r8,r9
+ 1189 04dc 8D1A      		sub r8,r29
+ 191:glcd.c        ****     setpixel(buff, x0 + y, y0 - x, color);
+ 1191               	.LM104:
+ 1192 04de 202F      		mov r18,r16
+ 1193 04e0 482D      		mov r20,r8
+ 1194 04e2 6B2D      		mov r22,r11
+ 1195 04e4 C701      		movw r24,r14
+ 1196 04e6 0E94 0000 		call setpixel
+ 192:glcd.c        ****     setpixel(buff, x0 - y, y0 - x, color);
+ 1198               	.LM105:
+ 1199 04ea 202F      		mov r18,r16
+ 1200 04ec 482D      		mov r20,r8
+ 1201 04ee 6C2D      		mov r22,r12
+ 1202 04f0 C701      		movw r24,r14
+ 1203 04f2 0E94 0000 		call setpixel
+ 1204 04f6 00C0      		rjmp .L58
+ 1205               	.L61:
+ 1206               	/* epilogue start */
+ 193:glcd.c        ****     
+ 194:glcd.c        ****   }
+ 195:glcd.c        **** }
+ 1208               	.LM106:
+ 1209 04f8 DF91      		pop r29
+ 1210 04fa CF91      		pop r28
+ 1211 04fc 1F91      		pop r17
+ 1212 04fe 0F91      		pop r16
+ 1213 0500 FF90      		pop r15
+ 1214 0502 EF90      		pop r14
+ 1215 0504 DF90      		pop r13
+ 1216 0506 CF90      		pop r12
+ 1217 0508 BF90      		pop r11
+ 1218 050a AF90      		pop r10
+ 1219 050c 9F90      		pop r9
+ 1220 050e 8F90      		pop r8
+ 1221 0510 0895      		ret
+ 1229               	.Lscope9:
+ 1231               		.stabd	78,0,0
+ 1238               	.global	fillcircle
+ 1240               	fillcircle:
+ 1241               		.stabd	46,0,0
+ 196:glcd.c        **** 
+ 197:glcd.c        **** 
+ 198:glcd.c        **** // draw a circle
+ 199:glcd.c        **** void fillcircle(uint8_t *buff,
+ 200:glcd.c        **** 	      uint8_t x0, uint8_t y0, uint8_t r, 
+ 201:glcd.c        **** 	      uint8_t color) {
+ 1243               	.LM107:
+ 1244               	.LFBB10:
+ 1245 0512 4F92      		push r4
+ 1246 0514 5F92      		push r5
+ 1247 0516 6F92      		push r6
+ 1248 0518 7F92      		push r7
+ 1249 051a 8F92      		push r8
+ 1250 051c 9F92      		push r9
+ 1251 051e AF92      		push r10
+ 1252 0520 BF92      		push r11
+ 1253 0522 CF92      		push r12
+ 1254 0524 DF92      		push r13
+ 1255 0526 EF92      		push r14
+ 1256 0528 FF92      		push r15
+ 1257 052a 0F93      		push r16
+ 1258 052c 1F93      		push r17
+ 1259 052e CF93      		push r28
+ 1260 0530 DF93      		push r29
+ 1261               	/* prologue: function */
+ 1262               	/* frame size = 0 */
+ 1263               	/* stack size = 16 */
+ 1264               	.L__stack_usage = 16
+ 1265 0532 6C01      		movw r12,r24
+ 1266 0534 E62E      		mov r14,r22
+ 1267 0536 642E      		mov r6,r20
+ 202:glcd.c        ****   int8_t f = 1 - r;
+ 1269               	.LM108:
+ 1270 0538 11E0      		ldi r17,lo8(1)
+ 1271 053a 121B      		sub r17,r18
+ 203:glcd.c        ****   int8_t ddF_x = 1;
+ 204:glcd.c        ****   int8_t ddF_y = -2 * r;
+ 1273               	.LM109:
+ 1274 053c F22E      		mov r15,r18
+ 1275 053e F194      		neg r15
+ 1276 0540 FF0C      		lsl r15
+ 205:glcd.c        ****   int8_t x = 0;
+ 206:glcd.c        ****   int8_t y = r;
+ 1278               	.LM110:
+ 1279 0542 C22F      		mov r28,r18
+ 1280               	.LBB20:
+ 207:glcd.c        **** 
+ 208:glcd.c        ****   for (uint8_t i=y0-r; i<=y0+r; i++) {
+ 1282               	.LM111:
+ 1283 0544 D42F      		mov r29,r20
+ 1284 0546 D21B      		sub r29,r18
+ 1285 0548 A42E      		mov r10,r20
+ 1286 054a B12C      		mov r11,__zero_reg__
+ 1287 054c 4501      		movw r8,r10
+ 1288 054e 820E      		add r8,r18
+ 1289 0550 911C      		adc r9,__zero_reg__
+ 1290               	.L63:
+ 1292               	.LM112:
+ 1293 0552 8D2F      		mov r24,r29
+ 1294 0554 90E0      		ldi r25,0
+ 1295 0556 8816      		cp r8,r24
+ 1296 0558 9906      		cpc r9,r25
+ 1297 055a 04F0      		brlt .L74
+ 209:glcd.c        ****     setpixel(buff, x0, i, color);
+ 1299               	.LM113:
+ 1300 055c 202F      		mov r18,r16
+ 1301 055e 4D2F      		mov r20,r29
+ 1302 0560 6E2D      		mov r22,r14
+ 1303 0562 C601      		movw r24,r12
+ 1304 0564 0E94 0000 		call setpixel
+ 208:glcd.c        ****     setpixel(buff, x0, i, color);
+ 1306               	.LM114:
+ 1307 0568 DF5F      		subi r29,lo8(-(1))
+ 1308 056a 00C0      		rjmp .L63
+ 1309               	.L74:
+ 208:glcd.c        ****     setpixel(buff, x0, i, color);
+ 1311               	.LM115:
+ 1312 056c D0E0      		ldi r29,0
+ 1313               	.L71:
+ 1314               	.LBE20:
+ 210:glcd.c        ****   }
+ 211:glcd.c        **** 
+ 212:glcd.c        ****   while (x<y) {
+ 1316               	.LM116:
+ 1317 056e DC17      		cp r29,r28
+ 1318 0570 04F0      		brlt .+2
+ 1319 0572 00C0      		rjmp .L75
+ 213:glcd.c        ****     if (f >= 0) {
+ 1321               	.LM117:
+ 1322 0574 17FD      		sbrc r17,7
+ 1323 0576 00C0      		rjmp .L66
+ 214:glcd.c        ****       y--;
+ 1325               	.LM118:
+ 1326 0578 C150      		subi r28,lo8(-(-1))
+ 215:glcd.c        ****       ddF_y += 2;
+ 1328               	.LM119:
+ 1329 057a F394      		inc r15
+ 1330 057c F394      		inc r15
+ 216:glcd.c        ****       f += ddF_y;
+ 1332               	.LM120:
+ 1333 057e 1F0D      		add r17,r15
+ 1334               	.L66:
+ 1335 0580 DF5F      		subi r29,lo8(-(1))
+ 1336 0582 8D2F      		mov r24,r29
+ 1337 0584 880F      		lsl r24
+ 1338 0586 8F5F      		subi r24,lo8(-(1))
+ 217:glcd.c        ****     }
+ 218:glcd.c        ****     x++;
+ 219:glcd.c        ****     ddF_x += 2;
+ 220:glcd.c        ****     f += ddF_x;
+ 1340               	.LM121:
+ 1341 0588 180F      		add r17,r24
+ 1342               	.LBB21:
+ 221:glcd.c        ****   
+ 222:glcd.c        ****     for (uint8_t i=y0-y; i<=y0+y; i++) {
+ 1344               	.LM122:
+ 1345 058a 762C      		mov r7,r6
+ 1346 058c 7C1A      		sub r7,r28
+ 1347 058e 4501      		movw r8,r10
+ 1348 0590 8C0E      		add r8,r28
+ 1349 0592 911C      		adc r9,__zero_reg__
+ 1350 0594 C7FD      		sbrc r28,7
+ 1351 0596 9A94      		dec r9
+ 1352 0598 5D2E      		mov r5,r29
+ 1353 059a 5E0C      		add r5,r14
+ 1354 059c 4E2C      		mov r4,r14
+ 1355 059e 4D1A      		sub r4,r29
+ 1356               	.L67:
+ 1358               	.LM123:
+ 1359 05a0 872D      		mov r24,r7
+ 1360 05a2 90E0      		ldi r25,0
+ 1361 05a4 8816      		cp r8,r24
+ 1362 05a6 9906      		cpc r9,r25
+ 1363 05a8 04F0      		brlt .L76
+ 223:glcd.c        ****       setpixel(buff, x0+x, i, color);
+ 1365               	.LM124:
+ 1366 05aa 202F      		mov r18,r16
+ 1367 05ac 472D      		mov r20,r7
+ 1368 05ae 652D      		mov r22,r5
+ 1369 05b0 C601      		movw r24,r12
+ 1370 05b2 0E94 0000 		call setpixel
+ 224:glcd.c        ****       setpixel(buff, x0-x, i, color);
+ 1372               	.LM125:
+ 1373 05b6 202F      		mov r18,r16
+ 1374 05b8 472D      		mov r20,r7
+ 1375 05ba 642D      		mov r22,r4
+ 1376 05bc C601      		movw r24,r12
+ 1377 05be 0E94 0000 		call setpixel
+ 222:glcd.c        ****       setpixel(buff, x0+x, i, color);
+ 1379               	.LM126:
+ 1380 05c2 7394      		inc r7
+ 1381 05c4 00C0      		rjmp .L67
+ 1382               	.L76:
+ 1383 05c6 762C      		mov r7,r6
+ 1384 05c8 7D1A      		sub r7,r29
+ 1385               	.LBE21:
+ 1386               	.LBB22:
+ 225:glcd.c        ****     } 
+ 226:glcd.c        ****     for (uint8_t i=y0-x; i<=y0+x; i++) {
+ 1388               	.LM127:
+ 1389 05ca 4501      		movw r8,r10
+ 1390 05cc 8D0E      		add r8,r29
+ 1391 05ce 911C      		adc r9,__zero_reg__
+ 1392 05d0 D7FD      		sbrc r29,7
+ 1393 05d2 9A94      		dec r9
+ 227:glcd.c        ****       setpixel(buff, x0+y, i, color);
+ 1395               	.LM128:
+ 1396 05d4 5C2E      		mov r5,r28
+ 1397 05d6 5E0C      		add r5,r14
+ 228:glcd.c        ****       setpixel(buff, x0-y, i, color);
+ 1399               	.LM129:
+ 1400 05d8 4E2C      		mov r4,r14
+ 1401 05da 4C1A      		sub r4,r28
+ 1402               	.L69:
+ 226:glcd.c        ****       setpixel(buff, x0+y, i, color);
+ 1404               	.LM130:
+ 1405 05dc 872D      		mov r24,r7
+ 1406 05de 90E0      		ldi r25,0
+ 1407 05e0 8816      		cp r8,r24
+ 1408 05e2 9906      		cpc r9,r25
+ 1409 05e4 04F0      		brlt .L71
+ 227:glcd.c        ****       setpixel(buff, x0+y, i, color);
+ 1411               	.LM131:
+ 1412 05e6 202F      		mov r18,r16
+ 1413 05e8 472D      		mov r20,r7
+ 1414 05ea 652D      		mov r22,r5
+ 1415 05ec C601      		movw r24,r12
+ 1416 05ee 0E94 0000 		call setpixel
+ 1418               	.LM132:
+ 1419 05f2 202F      		mov r18,r16
+ 1420 05f4 472D      		mov r20,r7
+ 1421 05f6 642D      		mov r22,r4
+ 1422 05f8 C601      		movw r24,r12
+ 1423 05fa 0E94 0000 		call setpixel
+ 226:glcd.c        ****       setpixel(buff, x0+y, i, color);
+ 1425               	.LM133:
+ 1426 05fe 7394      		inc r7
+ 1427 0600 00C0      		rjmp .L69
+ 1428               	.L75:
+ 1429               	/* epilogue start */
+ 1430               	.LBE22:
+ 229:glcd.c        ****     }    
+ 230:glcd.c        ****   }
+ 231:glcd.c        **** }
+ 1432               	.LM134:
+ 1433 0602 DF91      		pop r29
+ 1434 0604 CF91      		pop r28
+ 1435 0606 1F91      		pop r17
+ 1436 0608 0F91      		pop r16
+ 1437 060a FF90      		pop r15
+ 1438 060c EF90      		pop r14
+ 1439 060e DF90      		pop r13
+ 1440 0610 CF90      		pop r12
+ 1441 0612 BF90      		pop r11
+ 1442 0614 AF90      		pop r10
+ 1443 0616 9F90      		pop r9
+ 1444 0618 8F90      		pop r8
+ 1445 061a 7F90      		pop r7
+ 1446 061c 6F90      		pop r6
+ 1447 061e 5F90      		pop r5
+ 1448 0620 4F90      		pop r4
+ 1449 0622 0895      		ret
+ 1466               	.Lscope10:
+ 1468               		.stabd	78,0,0
+ 1471               	.global	clear_buffer
+ 1473               	clear_buffer:
+ 1474               		.stabd	46,0,0
+ 232:glcd.c        **** 
+ 233:glcd.c        **** 
+ 234:glcd.c        **** // clear everything
+ 235:glcd.c        **** void clear_buffer(uint8_t *buff) {
+ 1476               	.LM135:
+ 1477               	.LFBB11:
+ 1478               	/* prologue: function */
+ 1479               	/* frame size = 0 */
+ 1480               	/* stack size = 0 */
+ 1481               	.L__stack_usage = 0
+ 236:glcd.c        ****   memset(buff, 0, 1024);
+ 1483               	.LM136:
+ 1484 0624 20E0      		ldi r18,0
+ 1485 0626 34E0      		ldi r19,lo8(4)
+ 1486 0628 FC01      		movw r30,r24
+ 1487 062a A901      		movw r20,r18
+ 1488               		0:
+ 1489 062c 1192      		st Z+,__zero_reg__
+ 1490 062e 4150      		subi r20,1
+ 1491 0630 5040      		sbci r21,0
+ 1492 0632 01F4      		brne 0b
+ 1493 0634 0895      		ret
+ 1495               	.Lscope11:
+ 1497               		.stabd	78,0,0
+ 1498               		.section	.progmem.data,"a",@progbits
+ 1501               	font:
+ 1502 0000 0000      		.word	0
+ 1503 0002 0000      		.word	0
+ 1504 0004 0000      		.word	0
+ 1505 0006 0000      		.word	0
+ 1506 0008 0000      		.word	0
+ 1507 000a 7C00      		.word	124
+ 1508 000c DA00      		.word	218
+ 1509 000e F200      		.word	242
+ 1510 0010 DA00      		.word	218
+ 1511 0012 7C00      		.word	124
+ 1512 0014 7C00      		.word	124
+ 1513 0016 D600      		.word	214
+ 1514 0018 F200      		.word	242
+ 1515 001a D600      		.word	214
+ 1516 001c 7C00      		.word	124
+ 1517 001e 3800      		.word	56
+ 1518 0020 7C00      		.word	124
+ 1519 0022 3E00      		.word	62
+ 1520 0024 7C00      		.word	124
+ 1521 0026 3800      		.word	56
+ 1522 0028 1800      		.word	24
+ 1523 002a 3C00      		.word	60
+ 1524 002c 7E00      		.word	126
+ 1525 002e 3C00      		.word	60
+ 1526 0030 1800      		.word	24
+ 1527 0032 3800      		.word	56
+ 1528 0034 EA00      		.word	234
+ 1529 0036 BE00      		.word	190
+ 1530 0038 EA00      		.word	234
+ 1531 003a 3800      		.word	56
+ 1532 003c 3800      		.word	56
+ 1533 003e 7A00      		.word	122
+ 1534 0040 FE00      		.word	254
+ 1535 0042 7A00      		.word	122
+ 1536 0044 3800      		.word	56
+ 1537 0046 0000      		.word	0
+ 1538 0048 1800      		.word	24
+ 1539 004a 3C00      		.word	60
+ 1540 004c 1800      		.word	24
+ 1541 004e 0000      		.word	0
+ 1542 0050 FF00      		.word	255
+ 1543 0052 E700      		.word	231
+ 1544 0054 C300      		.word	195
+ 1545 0056 E700      		.word	231
+ 1546 0058 FF00      		.word	255
+ 1547 005a 0000      		.word	0
+ 1548 005c 1800      		.word	24
+ 1549 005e 2400      		.word	36
+ 1550 0060 1800      		.word	24
+ 1551 0062 0000      		.word	0
+ 1552 0064 FF00      		.word	255
+ 1553 0066 E700      		.word	231
+ 1554 0068 DB00      		.word	219
+ 1555 006a E700      		.word	231
+ 1556 006c FF00      		.word	255
+ 1557 006e 0C00      		.word	12
+ 1558 0070 1200      		.word	18
+ 1559 0072 5C00      		.word	92
+ 1560 0074 6000      		.word	96
+ 1561 0076 7000      		.word	112
+ 1562 0078 6400      		.word	100
+ 1563 007a 9400      		.word	148
+ 1564 007c 9E00      		.word	158
+ 1565 007e 9400      		.word	148
+ 1566 0080 6400      		.word	100
+ 1567 0082 0200      		.word	2
+ 1568 0084 FE00      		.word	254
+ 1569 0086 A000      		.word	160
+ 1570 0088 A000      		.word	160
+ 1571 008a E000      		.word	224
+ 1572 008c 0200      		.word	2
+ 1573 008e FE00      		.word	254
+ 1574 0090 A000      		.word	160
+ 1575 0092 A400      		.word	164
+ 1576 0094 FC00      		.word	252
+ 1577 0096 5A00      		.word	90
+ 1578 0098 3C00      		.word	60
+ 1579 009a E700      		.word	231
+ 1580 009c 3C00      		.word	60
+ 1581 009e 5A00      		.word	90
+ 1582 00a0 FE00      		.word	254
+ 1583 00a2 7C00      		.word	124
+ 1584 00a4 3800      		.word	56
+ 1585 00a6 3800      		.word	56
+ 1586 00a8 1000      		.word	16
+ 1587 00aa 1000      		.word	16
+ 1588 00ac 3800      		.word	56
+ 1589 00ae 3800      		.word	56
+ 1590 00b0 7C00      		.word	124
+ 1591 00b2 FE00      		.word	254
+ 1592 00b4 2800      		.word	40
+ 1593 00b6 4400      		.word	68
+ 1594 00b8 FE00      		.word	254
+ 1595 00ba 4400      		.word	68
+ 1596 00bc 2800      		.word	40
+ 1597 00be FA00      		.word	250
+ 1598 00c0 FA00      		.word	250
+ 1599 00c2 0000      		.word	0
+ 1600 00c4 FA00      		.word	250
+ 1601 00c6 FA00      		.word	250
+ 1602 00c8 6000      		.word	96
+ 1603 00ca 9000      		.word	144
+ 1604 00cc FE00      		.word	254
+ 1605 00ce 8000      		.word	128
+ 1606 00d0 FE00      		.word	254
+ 1607 00d2 0000      		.word	0
+ 1608 00d4 6600      		.word	102
+ 1609 00d6 9100      		.word	145
+ 1610 00d8 A900      		.word	169
+ 1611 00da 5600      		.word	86
+ 1612 00dc 0600      		.word	6
+ 1613 00de 0600      		.word	6
+ 1614 00e0 0600      		.word	6
+ 1615 00e2 0600      		.word	6
+ 1616 00e4 0600      		.word	6
+ 1617 00e6 2900      		.word	41
+ 1618 00e8 4500      		.word	69
+ 1619 00ea FF00      		.word	255
+ 1620 00ec 4500      		.word	69
+ 1621 00ee 2900      		.word	41
+ 1622 00f0 1000      		.word	16
+ 1623 00f2 2000      		.word	32
+ 1624 00f4 7E00      		.word	126
+ 1625 00f6 2000      		.word	32
+ 1626 00f8 1000      		.word	16
+ 1627 00fa 0800      		.word	8
+ 1628 00fc 0400      		.word	4
+ 1629 00fe 7E00      		.word	126
+ 1630 0100 0400      		.word	4
+ 1631 0102 0800      		.word	8
+ 1632 0104 1000      		.word	16
+ 1633 0106 1000      		.word	16
+ 1634 0108 5400      		.word	84
+ 1635 010a 3800      		.word	56
+ 1636 010c 1000      		.word	16
+ 1637 010e 1000      		.word	16
+ 1638 0110 3800      		.word	56
+ 1639 0112 5400      		.word	84
+ 1640 0114 1000      		.word	16
+ 1641 0116 1000      		.word	16
+ 1642 0118 7800      		.word	120
+ 1643 011a 0800      		.word	8
+ 1644 011c 0800      		.word	8
+ 1645 011e 0800      		.word	8
+ 1646 0120 0800      		.word	8
+ 1647 0122 3000      		.word	48
+ 1648 0124 7800      		.word	120
+ 1649 0126 3000      		.word	48
+ 1650 0128 7800      		.word	120
+ 1651 012a 3000      		.word	48
+ 1652 012c 0C00      		.word	12
+ 1653 012e 1C00      		.word	28
+ 1654 0130 7C00      		.word	124
+ 1655 0132 1C00      		.word	28
+ 1656 0134 0C00      		.word	12
+ 1657 0136 6000      		.word	96
+ 1658 0138 7000      		.word	112
+ 1659 013a 7C00      		.word	124
+ 1660 013c 7000      		.word	112
+ 1661 013e 6000      		.word	96
+ 1662 0140 0000      		.word	0
+ 1663 0142 0000      		.word	0
+ 1664 0144 0000      		.word	0
+ 1665 0146 0000      		.word	0
+ 1666 0148 0000      		.word	0
+ 1667 014a 0000      		.word	0
+ 1668 014c 0000      		.word	0
+ 1669 014e FA00      		.word	250
+ 1670 0150 0000      		.word	0
+ 1671 0152 0000      		.word	0
+ 1672 0154 0000      		.word	0
+ 1673 0156 E000      		.word	224
+ 1674 0158 0000      		.word	0
+ 1675 015a E000      		.word	224
+ 1676 015c 0000      		.word	0
+ 1677 015e 2800      		.word	40
+ 1678 0160 FE00      		.word	254
+ 1679 0162 2800      		.word	40
+ 1680 0164 FE00      		.word	254
+ 1681 0166 2800      		.word	40
+ 1682 0168 2400      		.word	36
+ 1683 016a 5400      		.word	84
+ 1684 016c FE00      		.word	254
+ 1685 016e 5400      		.word	84
+ 1686 0170 4800      		.word	72
+ 1687 0172 C400      		.word	196
+ 1688 0174 C800      		.word	200
+ 1689 0176 1000      		.word	16
+ 1690 0178 2600      		.word	38
+ 1691 017a 4600      		.word	70
+ 1692 017c 6C00      		.word	108
+ 1693 017e 9200      		.word	146
+ 1694 0180 6A00      		.word	106
+ 1695 0182 0400      		.word	4
+ 1696 0184 0A00      		.word	10
+ 1697 0186 0000      		.word	0
+ 1698 0188 1000      		.word	16
+ 1699 018a E000      		.word	224
+ 1700 018c C000      		.word	192
+ 1701 018e 0000      		.word	0
+ 1702 0190 0000      		.word	0
+ 1703 0192 3800      		.word	56
+ 1704 0194 4400      		.word	68
+ 1705 0196 8200      		.word	130
+ 1706 0198 0000      		.word	0
+ 1707 019a 0000      		.word	0
+ 1708 019c 8200      		.word	130
+ 1709 019e 4400      		.word	68
+ 1710 01a0 3800      		.word	56
+ 1711 01a2 0000      		.word	0
+ 1712 01a4 5400      		.word	84
+ 1713 01a6 3800      		.word	56
+ 1714 01a8 FE00      		.word	254
+ 1715 01aa 3800      		.word	56
+ 1716 01ac 5400      		.word	84
+ 1717 01ae 1000      		.word	16
+ 1718 01b0 1000      		.word	16
+ 1719 01b2 7C00      		.word	124
+ 1720 01b4 1000      		.word	16
+ 1721 01b6 1000      		.word	16
+ 1722 01b8 0000      		.word	0
+ 1723 01ba 0100      		.word	1
+ 1724 01bc 0E00      		.word	14
+ 1725 01be 0C00      		.word	12
+ 1726 01c0 0000      		.word	0
+ 1727 01c2 1000      		.word	16
+ 1728 01c4 1000      		.word	16
+ 1729 01c6 1000      		.word	16
+ 1730 01c8 1000      		.word	16
+ 1731 01ca 1000      		.word	16
+ 1732 01cc 0000      		.word	0
+ 1733 01ce 0000      		.word	0
+ 1734 01d0 0600      		.word	6
+ 1735 01d2 0600      		.word	6
+ 1736 01d4 0000      		.word	0
+ 1737 01d6 0400      		.word	4
+ 1738 01d8 0800      		.word	8
+ 1739 01da 1000      		.word	16
+ 1740 01dc 2000      		.word	32
+ 1741 01de 4000      		.word	64
+ 1742 01e0 7C00      		.word	124
+ 1743 01e2 8A00      		.word	138
+ 1744 01e4 9200      		.word	146
+ 1745 01e6 A200      		.word	162
+ 1746 01e8 7C00      		.word	124
+ 1747 01ea 0000      		.word	0
+ 1748 01ec 4200      		.word	66
+ 1749 01ee FE00      		.word	254
+ 1750 01f0 0200      		.word	2
+ 1751 01f2 0000      		.word	0
+ 1752 01f4 4E00      		.word	78
+ 1753 01f6 9200      		.word	146
+ 1754 01f8 9200      		.word	146
+ 1755 01fa 9200      		.word	146
+ 1756 01fc 6200      		.word	98
+ 1757 01fe 8400      		.word	132
+ 1758 0200 8200      		.word	130
+ 1759 0202 9200      		.word	146
+ 1760 0204 B200      		.word	178
+ 1761 0206 CC00      		.word	204
+ 1762 0208 1800      		.word	24
+ 1763 020a 2800      		.word	40
+ 1764 020c 4800      		.word	72
+ 1765 020e FE00      		.word	254
+ 1766 0210 0800      		.word	8
+ 1767 0212 E400      		.word	228
+ 1768 0214 A200      		.word	162
+ 1769 0216 A200      		.word	162
+ 1770 0218 A200      		.word	162
+ 1771 021a 9C00      		.word	156
+ 1772 021c 3C00      		.word	60
+ 1773 021e 5200      		.word	82
+ 1774 0220 9200      		.word	146
+ 1775 0222 9200      		.word	146
+ 1776 0224 8C00      		.word	140
+ 1777 0226 8200      		.word	130
+ 1778 0228 8400      		.word	132
+ 1779 022a 8800      		.word	136
+ 1780 022c 9000      		.word	144
+ 1781 022e E000      		.word	224
+ 1782 0230 6C00      		.word	108
+ 1783 0232 9200      		.word	146
+ 1784 0234 9200      		.word	146
+ 1785 0236 9200      		.word	146
+ 1786 0238 6C00      		.word	108
+ 1787 023a 6200      		.word	98
+ 1788 023c 9200      		.word	146
+ 1789 023e 9200      		.word	146
+ 1790 0240 9400      		.word	148
+ 1791 0242 7800      		.word	120
+ 1792 0244 0000      		.word	0
+ 1793 0246 0000      		.word	0
+ 1794 0248 2800      		.word	40
+ 1795 024a 0000      		.word	0
+ 1796 024c 0000      		.word	0
+ 1797 024e 0000      		.word	0
+ 1798 0250 0200      		.word	2
+ 1799 0252 2C00      		.word	44
+ 1800 0254 0000      		.word	0
+ 1801 0256 0000      		.word	0
+ 1802 0258 0000      		.word	0
+ 1803 025a 1000      		.word	16
+ 1804 025c 2800      		.word	40
+ 1805 025e 4400      		.word	68
+ 1806 0260 8200      		.word	130
+ 1807 0262 2800      		.word	40
+ 1808 0264 2800      		.word	40
+ 1809 0266 2800      		.word	40
+ 1810 0268 2800      		.word	40
+ 1811 026a 2800      		.word	40
+ 1812 026c 0000      		.word	0
+ 1813 026e 8200      		.word	130
+ 1814 0270 4400      		.word	68
+ 1815 0272 2800      		.word	40
+ 1816 0274 1000      		.word	16
+ 1817 0276 4000      		.word	64
+ 1818 0278 8000      		.word	128
+ 1819 027a 9A00      		.word	154
+ 1820 027c 9000      		.word	144
+ 1821 027e 6000      		.word	96
+ 1822 0280 7C00      		.word	124
+ 1823 0282 8200      		.word	130
+ 1824 0284 BA00      		.word	186
+ 1825 0286 9A00      		.word	154
+ 1826 0288 7200      		.word	114
+ 1827 028a 3E00      		.word	62
+ 1828 028c 4800      		.word	72
+ 1829 028e 8800      		.word	136
+ 1830 0290 4800      		.word	72
+ 1831 0292 3E00      		.word	62
+ 1832 0294 FE00      		.word	254
+ 1833 0296 9200      		.word	146
+ 1834 0298 9200      		.word	146
+ 1835 029a 9200      		.word	146
+ 1836 029c 6C00      		.word	108
+ 1837 029e 7C00      		.word	124
+ 1838 02a0 8200      		.word	130
+ 1839 02a2 8200      		.word	130
+ 1840 02a4 8200      		.word	130
+ 1841 02a6 4400      		.word	68
+ 1842 02a8 FE00      		.word	254
+ 1843 02aa 8200      		.word	130
+ 1844 02ac 8200      		.word	130
+ 1845 02ae 8200      		.word	130
+ 1846 02b0 7C00      		.word	124
+ 1847 02b2 FE00      		.word	254
+ 1848 02b4 9200      		.word	146
+ 1849 02b6 9200      		.word	146
+ 1850 02b8 9200      		.word	146
+ 1851 02ba 8200      		.word	130
+ 1852 02bc FE00      		.word	254
+ 1853 02be 9000      		.word	144
+ 1854 02c0 9000      		.word	144
+ 1855 02c2 9000      		.word	144
+ 1856 02c4 8000      		.word	128
+ 1857 02c6 7C00      		.word	124
+ 1858 02c8 8200      		.word	130
+ 1859 02ca 8200      		.word	130
+ 1860 02cc 8A00      		.word	138
+ 1861 02ce CE00      		.word	206
+ 1862 02d0 FE00      		.word	254
+ 1863 02d2 1000      		.word	16
+ 1864 02d4 1000      		.word	16
+ 1865 02d6 1000      		.word	16
+ 1866 02d8 FE00      		.word	254
+ 1867 02da 0000      		.word	0
+ 1868 02dc 8200      		.word	130
+ 1869 02de FE00      		.word	254
+ 1870 02e0 8200      		.word	130
+ 1871 02e2 0000      		.word	0
+ 1872 02e4 0400      		.word	4
+ 1873 02e6 0200      		.word	2
+ 1874 02e8 8200      		.word	130
+ 1875 02ea FC00      		.word	252
+ 1876 02ec 8000      		.word	128
+ 1877 02ee FE00      		.word	254
+ 1878 02f0 1000      		.word	16
+ 1879 02f2 2800      		.word	40
+ 1880 02f4 4400      		.word	68
+ 1881 02f6 8200      		.word	130
+ 1882 02f8 FE00      		.word	254
+ 1883 02fa 0200      		.word	2
+ 1884 02fc 0200      		.word	2
+ 1885 02fe 0200      		.word	2
+ 1886 0300 0200      		.word	2
+ 1887 0302 FE00      		.word	254
+ 1888 0304 4000      		.word	64
+ 1889 0306 3800      		.word	56
+ 1890 0308 4000      		.word	64
+ 1891 030a FE00      		.word	254
+ 1892 030c FE00      		.word	254
+ 1893 030e 2000      		.word	32
+ 1894 0310 1000      		.word	16
+ 1895 0312 0800      		.word	8
+ 1896 0314 FE00      		.word	254
+ 1897 0316 7C00      		.word	124
+ 1898 0318 8200      		.word	130
+ 1899 031a 8200      		.word	130
+ 1900 031c 8200      		.word	130
+ 1901 031e 7C00      		.word	124
+ 1902 0320 FE00      		.word	254
+ 1903 0322 9000      		.word	144
+ 1904 0324 9000      		.word	144
+ 1905 0326 9000      		.word	144
+ 1906 0328 6000      		.word	96
+ 1907 032a 7C00      		.word	124
+ 1908 032c 8200      		.word	130
+ 1909 032e 8A00      		.word	138
+ 1910 0330 8400      		.word	132
+ 1911 0332 7A00      		.word	122
+ 1912 0334 FE00      		.word	254
+ 1913 0336 9000      		.word	144
+ 1914 0338 9800      		.word	152
+ 1915 033a 9400      		.word	148
+ 1916 033c 6200      		.word	98
+ 1917 033e 6400      		.word	100
+ 1918 0340 9200      		.word	146
+ 1919 0342 9200      		.word	146
+ 1920 0344 9200      		.word	146
+ 1921 0346 4C00      		.word	76
+ 1922 0348 C000      		.word	192
+ 1923 034a 8000      		.word	128
+ 1924 034c FE00      		.word	254
+ 1925 034e 8000      		.word	128
+ 1926 0350 C000      		.word	192
+ 1927 0352 FC00      		.word	252
+ 1928 0354 0200      		.word	2
+ 1929 0356 0200      		.word	2
+ 1930 0358 0200      		.word	2
+ 1931 035a FC00      		.word	252
+ 1932 035c F800      		.word	248
+ 1933 035e 0400      		.word	4
+ 1934 0360 0200      		.word	2
+ 1935 0362 0400      		.word	4
+ 1936 0364 F800      		.word	248
+ 1937 0366 FC00      		.word	252
+ 1938 0368 0200      		.word	2
+ 1939 036a 1C00      		.word	28
+ 1940 036c 0200      		.word	2
+ 1941 036e FC00      		.word	252
+ 1942 0370 C600      		.word	198
+ 1943 0372 2800      		.word	40
+ 1944 0374 1000      		.word	16
+ 1945 0376 2800      		.word	40
+ 1946 0378 C600      		.word	198
+ 1947 037a C000      		.word	192
+ 1948 037c 2000      		.word	32
+ 1949 037e 1E00      		.word	30
+ 1950 0380 2000      		.word	32
+ 1951 0382 C000      		.word	192
+ 1952 0384 8600      		.word	134
+ 1953 0386 9A00      		.word	154
+ 1954 0388 9200      		.word	146
+ 1955 038a B200      		.word	178
+ 1956 038c C200      		.word	194
+ 1957 038e 0000      		.word	0
+ 1958 0390 FE00      		.word	254
+ 1959 0392 8200      		.word	130
+ 1960 0394 8200      		.word	130
+ 1961 0396 8200      		.word	130
+ 1962 0398 4000      		.word	64
+ 1963 039a 2000      		.word	32
+ 1964 039c 1000      		.word	16
+ 1965 039e 0800      		.word	8
+ 1966 03a0 0400      		.word	4
+ 1967 03a2 0000      		.word	0
+ 1968 03a4 8200      		.word	130
+ 1969 03a6 8200      		.word	130
+ 1970 03a8 8200      		.word	130
+ 1971 03aa FE00      		.word	254
+ 1972 03ac 2000      		.word	32
+ 1973 03ae 4000      		.word	64
+ 1974 03b0 8000      		.word	128
+ 1975 03b2 4000      		.word	64
+ 1976 03b4 2000      		.word	32
+ 1977 03b6 0200      		.word	2
+ 1978 03b8 0200      		.word	2
+ 1979 03ba 0200      		.word	2
+ 1980 03bc 0200      		.word	2
+ 1981 03be 0200      		.word	2
+ 1982 03c0 0000      		.word	0
+ 1983 03c2 C000      		.word	192
+ 1984 03c4 E000      		.word	224
+ 1985 03c6 1000      		.word	16
+ 1986 03c8 0000      		.word	0
+ 1987 03ca 0400      		.word	4
+ 1988 03cc 2A00      		.word	42
+ 1989 03ce 2A00      		.word	42
+ 1990 03d0 1E00      		.word	30
+ 1991 03d2 0200      		.word	2
+ 1992 03d4 FE00      		.word	254
+ 1993 03d6 1400      		.word	20
+ 1994 03d8 2200      		.word	34
+ 1995 03da 2200      		.word	34
+ 1996 03dc 1C00      		.word	28
+ 1997 03de 1C00      		.word	28
+ 1998 03e0 2200      		.word	34
+ 1999 03e2 2200      		.word	34
+ 2000 03e4 2200      		.word	34
+ 2001 03e6 1400      		.word	20
+ 2002 03e8 1C00      		.word	28
+ 2003 03ea 2200      		.word	34
+ 2004 03ec 2200      		.word	34
+ 2005 03ee 1400      		.word	20
+ 2006 03f0 FE00      		.word	254
+ 2007 03f2 1C00      		.word	28
+ 2008 03f4 2A00      		.word	42
+ 2009 03f6 2A00      		.word	42
+ 2010 03f8 2A00      		.word	42
+ 2011 03fa 1800      		.word	24
+ 2012 03fc 0000      		.word	0
+ 2013 03fe 1000      		.word	16
+ 2014 0400 7E00      		.word	126
+ 2015 0402 9000      		.word	144
+ 2016 0404 4000      		.word	64
+ 2017 0406 1800      		.word	24
+ 2018 0408 2500      		.word	37
+ 2019 040a 2500      		.word	37
+ 2020 040c 3900      		.word	57
+ 2021 040e 1E00      		.word	30
+ 2022 0410 FE00      		.word	254
+ 2023 0412 1000      		.word	16
+ 2024 0414 2000      		.word	32
+ 2025 0416 2000      		.word	32
+ 2026 0418 1E00      		.word	30
+ 2027 041a 0000      		.word	0
+ 2028 041c 2200      		.word	34
+ 2029 041e BE00      		.word	190
+ 2030 0420 0200      		.word	2
+ 2031 0422 0000      		.word	0
+ 2032 0424 0400      		.word	4
+ 2033 0426 0200      		.word	2
+ 2034 0428 0200      		.word	2
+ 2035 042a BC00      		.word	188
+ 2036 042c 0000      		.word	0
+ 2037 042e FE00      		.word	254
+ 2038 0430 0800      		.word	8
+ 2039 0432 1400      		.word	20
+ 2040 0434 2200      		.word	34
+ 2041 0436 0000      		.word	0
+ 2042 0438 0000      		.word	0
+ 2043 043a 8200      		.word	130
+ 2044 043c FE00      		.word	254
+ 2045 043e 0200      		.word	2
+ 2046 0440 0000      		.word	0
+ 2047 0442 3E00      		.word	62
+ 2048 0444 2000      		.word	32
+ 2049 0446 1E00      		.word	30
+ 2050 0448 2000      		.word	32
+ 2051 044a 1E00      		.word	30
+ 2052 044c 3E00      		.word	62
+ 2053 044e 1000      		.word	16
+ 2054 0450 2000      		.word	32
+ 2055 0452 2000      		.word	32
+ 2056 0454 1E00      		.word	30
+ 2057 0456 1C00      		.word	28
+ 2058 0458 2200      		.word	34
+ 2059 045a 2200      		.word	34
+ 2060 045c 2200      		.word	34
+ 2061 045e 1C00      		.word	28
+ 2062 0460 3F00      		.word	63
+ 2063 0462 1800      		.word	24
+ 2064 0464 2400      		.word	36
+ 2065 0466 2400      		.word	36
+ 2066 0468 1800      		.word	24
+ 2067 046a 1800      		.word	24
+ 2068 046c 2400      		.word	36
+ 2069 046e 2400      		.word	36
+ 2070 0470 1800      		.word	24
+ 2071 0472 3F00      		.word	63
+ 2072 0474 3E00      		.word	62
+ 2073 0476 1000      		.word	16
+ 2074 0478 2000      		.word	32
+ 2075 047a 2000      		.word	32
+ 2076 047c 1000      		.word	16
+ 2077 047e 1200      		.word	18
+ 2078 0480 2A00      		.word	42
+ 2079 0482 2A00      		.word	42
+ 2080 0484 2A00      		.word	42
+ 2081 0486 2400      		.word	36
+ 2082 0488 2000      		.word	32
+ 2083 048a 2000      		.word	32
+ 2084 048c FC00      		.word	252
+ 2085 048e 2200      		.word	34
+ 2086 0490 2400      		.word	36
+ 2087 0492 3C00      		.word	60
+ 2088 0494 0200      		.word	2
+ 2089 0496 0200      		.word	2
+ 2090 0498 0400      		.word	4
+ 2091 049a 3E00      		.word	62
+ 2092 049c 3800      		.word	56
+ 2093 049e 0400      		.word	4
+ 2094 04a0 0200      		.word	2
+ 2095 04a2 0400      		.word	4
+ 2096 04a4 3800      		.word	56
+ 2097 04a6 3C00      		.word	60
+ 2098 04a8 0200      		.word	2
+ 2099 04aa 0C00      		.word	12
+ 2100 04ac 0200      		.word	2
+ 2101 04ae 3C00      		.word	60
+ 2102 04b0 2200      		.word	34
+ 2103 04b2 1400      		.word	20
+ 2104 04b4 0800      		.word	8
+ 2105 04b6 1400      		.word	20
+ 2106 04b8 2200      		.word	34
+ 2107 04ba 3200      		.word	50
+ 2108 04bc 0900      		.word	9
+ 2109 04be 0900      		.word	9
+ 2110 04c0 0900      		.word	9
+ 2111 04c2 3E00      		.word	62
+ 2112 04c4 2200      		.word	34
+ 2113 04c6 2600      		.word	38
+ 2114 04c8 2A00      		.word	42
+ 2115 04ca 3200      		.word	50
+ 2116 04cc 2200      		.word	34
+ 2117 04ce 0000      		.word	0
+ 2118 04d0 1000      		.word	16
+ 2119 04d2 6C00      		.word	108
+ 2120 04d4 8200      		.word	130
+ 2121 04d6 0000      		.word	0
+ 2122 04d8 0000      		.word	0
+ 2123 04da 0000      		.word	0
+ 2124 04dc EE00      		.word	238
+ 2125 04de 0000      		.word	0
+ 2126 04e0 0000      		.word	0
+ 2127 04e2 0000      		.word	0
+ 2128 04e4 8200      		.word	130
+ 2129 04e6 6C00      		.word	108
+ 2130 04e8 1000      		.word	16
+ 2131 04ea 0000      		.word	0
+ 2132 04ec 4000      		.word	64
+ 2133 04ee 8000      		.word	128
+ 2134 04f0 4000      		.word	64
+ 2135 04f2 2000      		.word	32
+ 2136 04f4 4000      		.word	64
+ 2137 04f6 3C00      		.word	60
+ 2138 04f8 6400      		.word	100
+ 2139 04fa C400      		.word	196
+ 2140 04fc 6400      		.word	100
+ 2141 04fe 3C00      		.word	60
+ 2142 0500 7800      		.word	120
+ 2143 0502 8500      		.word	133
+ 2144 0504 8500      		.word	133
+ 2145 0506 8600      		.word	134
+ 2146 0508 4800      		.word	72
+ 2147 050a 5C00      		.word	92
+ 2148 050c 0200      		.word	2
+ 2149 050e 0200      		.word	2
+ 2150 0510 0400      		.word	4
+ 2151 0512 5E00      		.word	94
+ 2152 0514 1C00      		.word	28
+ 2153 0516 2A00      		.word	42
+ 2154 0518 2A00      		.word	42
+ 2155 051a AA00      		.word	170
+ 2156 051c 9A00      		.word	154
+ 2157 051e 8400      		.word	132
+ 2158 0520 AA00      		.word	170
+ 2159 0522 AA00      		.word	170
+ 2160 0524 9E00      		.word	158
+ 2161 0526 8200      		.word	130
+ 2162 0528 8400      		.word	132
+ 2163 052a 2A00      		.word	42
+ 2164 052c 2A00      		.word	42
+ 2165 052e 1E00      		.word	30
+ 2166 0530 8200      		.word	130
+ 2167 0532 8400      		.word	132
+ 2168 0534 AA00      		.word	170
+ 2169 0536 2A00      		.word	42
+ 2170 0538 1E00      		.word	30
+ 2171 053a 0200      		.word	2
+ 2172 053c 0400      		.word	4
+ 2173 053e 2A00      		.word	42
+ 2174 0540 AA00      		.word	170
+ 2175 0542 9E00      		.word	158
+ 2176 0544 0200      		.word	2
+ 2177 0546 3000      		.word	48
+ 2178 0548 7800      		.word	120
+ 2179 054a 4A00      		.word	74
+ 2180 054c 4E00      		.word	78
+ 2181 054e 4800      		.word	72
+ 2182 0550 9C00      		.word	156
+ 2183 0552 AA00      		.word	170
+ 2184 0554 AA00      		.word	170
+ 2185 0556 AA00      		.word	170
+ 2186 0558 9A00      		.word	154
+ 2187 055a 9C00      		.word	156
+ 2188 055c 2A00      		.word	42
+ 2189 055e 2A00      		.word	42
+ 2190 0560 2A00      		.word	42
+ 2191 0562 9A00      		.word	154
+ 2192 0564 9C00      		.word	156
+ 2193 0566 AA00      		.word	170
+ 2194 0568 2A00      		.word	42
+ 2195 056a 2A00      		.word	42
+ 2196 056c 1A00      		.word	26
+ 2197 056e 0000      		.word	0
+ 2198 0570 0000      		.word	0
+ 2199 0572 A200      		.word	162
+ 2200 0574 3E00      		.word	62
+ 2201 0576 8200      		.word	130
+ 2202 0578 0000      		.word	0
+ 2203 057a 4000      		.word	64
+ 2204 057c A200      		.word	162
+ 2205 057e BE00      		.word	190
+ 2206 0580 4200      		.word	66
+ 2207 0582 0000      		.word	0
+ 2208 0584 8000      		.word	128
+ 2209 0586 A200      		.word	162
+ 2210 0588 3E00      		.word	62
+ 2211 058a 0200      		.word	2
+ 2212 058c 0F00      		.word	15
+ 2213 058e 9400      		.word	148
+ 2214 0590 2400      		.word	36
+ 2215 0592 9400      		.word	148
+ 2216 0594 0F00      		.word	15
+ 2217 0596 0F00      		.word	15
+ 2218 0598 1400      		.word	20
+ 2219 059a A400      		.word	164
+ 2220 059c 1400      		.word	20
+ 2221 059e 0F00      		.word	15
+ 2222 05a0 3E00      		.word	62
+ 2223 05a2 2A00      		.word	42
+ 2224 05a4 AA00      		.word	170
+ 2225 05a6 A200      		.word	162
+ 2226 05a8 0000      		.word	0
+ 2227 05aa 0400      		.word	4
+ 2228 05ac 2A00      		.word	42
+ 2229 05ae 2A00      		.word	42
+ 2230 05b0 3E00      		.word	62
+ 2231 05b2 2A00      		.word	42
+ 2232 05b4 3E00      		.word	62
+ 2233 05b6 5000      		.word	80
+ 2234 05b8 9000      		.word	144
+ 2235 05ba FE00      		.word	254
+ 2236 05bc 9200      		.word	146
+ 2237 05be 4C00      		.word	76
+ 2238 05c0 9200      		.word	146
+ 2239 05c2 9200      		.word	146
+ 2240 05c4 9200      		.word	146
+ 2241 05c6 4C00      		.word	76
+ 2242 05c8 4C00      		.word	76
+ 2243 05ca 1200      		.word	18
+ 2244 05cc 1200      		.word	18
+ 2245 05ce 1200      		.word	18
+ 2246 05d0 4C00      		.word	76
+ 2247 05d2 4C00      		.word	76
+ 2248 05d4 5200      		.word	82
+ 2249 05d6 1200      		.word	18
+ 2250 05d8 1200      		.word	18
+ 2251 05da 0C00      		.word	12
+ 2252 05dc 5C00      		.word	92
+ 2253 05de 8200      		.word	130
+ 2254 05e0 8200      		.word	130
+ 2255 05e2 8400      		.word	132
+ 2256 05e4 5E00      		.word	94
+ 2257 05e6 5C00      		.word	92
+ 2258 05e8 4200      		.word	66
+ 2259 05ea 0200      		.word	2
+ 2260 05ec 0400      		.word	4
+ 2261 05ee 1E00      		.word	30
+ 2262 05f0 0000      		.word	0
+ 2263 05f2 B900      		.word	185
+ 2264 05f4 0500      		.word	5
+ 2265 05f6 0500      		.word	5
+ 2266 05f8 BE00      		.word	190
+ 2267 05fa 9C00      		.word	156
+ 2268 05fc 2200      		.word	34
+ 2269 05fe 2200      		.word	34
+ 2270 0600 2200      		.word	34
+ 2271 0602 9C00      		.word	156
+ 2272 0604 BC00      		.word	188
+ 2273 0606 0200      		.word	2
+ 2274 0608 0200      		.word	2
+ 2275 060a 0200      		.word	2
+ 2276 060c BC00      		.word	188
+ 2277 060e 3C00      		.word	60
+ 2278 0610 2400      		.word	36
+ 2279 0612 FF00      		.word	255
+ 2280 0614 2400      		.word	36
+ 2281 0616 2400      		.word	36
+ 2282 0618 1200      		.word	18
+ 2283 061a 7E00      		.word	126
+ 2284 061c 9200      		.word	146
+ 2285 061e C200      		.word	194
+ 2286 0620 6600      		.word	102
+ 2287 0622 D400      		.word	212
+ 2288 0624 F400      		.word	244
+ 2289 0626 3F00      		.word	63
+ 2290 0628 F400      		.word	244
+ 2291 062a D400      		.word	212
+ 2292 062c FF00      		.word	255
+ 2293 062e 9000      		.word	144
+ 2294 0630 9400      		.word	148
+ 2295 0632 6F00      		.word	111
+ 2296 0634 0400      		.word	4
+ 2297 0636 0300      		.word	3
+ 2298 0638 1100      		.word	17
+ 2299 063a 7E00      		.word	126
+ 2300 063c 9000      		.word	144
+ 2301 063e C000      		.word	192
+ 2302 0640 0400      		.word	4
+ 2303 0642 2A00      		.word	42
+ 2304 0644 2A00      		.word	42
+ 2305 0646 9E00      		.word	158
+ 2306 0648 8200      		.word	130
+ 2307 064a 0000      		.word	0
+ 2308 064c 0000      		.word	0
+ 2309 064e 2200      		.word	34
+ 2310 0650 BE00      		.word	190
+ 2311 0652 8200      		.word	130
+ 2312 0654 0C00      		.word	12
+ 2313 0656 1200      		.word	18
+ 2314 0658 1200      		.word	18
+ 2315 065a 5200      		.word	82
+ 2316 065c 4C00      		.word	76
+ 2317 065e 1C00      		.word	28
+ 2318 0660 0200      		.word	2
+ 2319 0662 0200      		.word	2
+ 2320 0664 4400      		.word	68
+ 2321 0666 5E00      		.word	94
+ 2322 0668 0000      		.word	0
+ 2323 066a 5E00      		.word	94
+ 2324 066c 5000      		.word	80
+ 2325 066e 5000      		.word	80
+ 2326 0670 4E00      		.word	78
+ 2327 0672 BE00      		.word	190
+ 2328 0674 B000      		.word	176
+ 2329 0676 9800      		.word	152
+ 2330 0678 8C00      		.word	140
+ 2331 067a BE00      		.word	190
+ 2332 067c 6400      		.word	100
+ 2333 067e 9400      		.word	148
+ 2334 0680 9400      		.word	148
+ 2335 0682 F400      		.word	244
+ 2336 0684 1400      		.word	20
+ 2337 0686 6400      		.word	100
+ 2338 0688 9400      		.word	148
+ 2339 068a 9400      		.word	148
+ 2340 068c 9400      		.word	148
+ 2341 068e 6400      		.word	100
+ 2342 0690 0C00      		.word	12
+ 2343 0692 1200      		.word	18
+ 2344 0694 B200      		.word	178
+ 2345 0696 0200      		.word	2
+ 2346 0698 0400      		.word	4
+ 2347 069a 1C00      		.word	28
+ 2348 069c 1000      		.word	16
+ 2349 069e 1000      		.word	16
+ 2350 06a0 1000      		.word	16
+ 2351 06a2 1000      		.word	16
+ 2352 06a4 1000      		.word	16
+ 2353 06a6 1000      		.word	16
+ 2354 06a8 1000      		.word	16
+ 2355 06aa 1000      		.word	16
+ 2356 06ac 1C00      		.word	28
+ 2357 06ae F400      		.word	244
+ 2358 06b0 0800      		.word	8
+ 2359 06b2 1300      		.word	19
+ 2360 06b4 3500      		.word	53
+ 2361 06b6 5D00      		.word	93
+ 2362 06b8 F400      		.word	244
+ 2363 06ba 0800      		.word	8
+ 2364 06bc 1400      		.word	20
+ 2365 06be 2C00      		.word	44
+ 2366 06c0 5F00      		.word	95
+ 2367 06c2 0000      		.word	0
+ 2368 06c4 0000      		.word	0
+ 2369 06c6 DE00      		.word	222
+ 2370 06c8 0000      		.word	0
+ 2371 06ca 0000      		.word	0
+ 2372 06cc 1000      		.word	16
+ 2373 06ce 2800      		.word	40
+ 2374 06d0 5400      		.word	84
+ 2375 06d2 2800      		.word	40
+ 2376 06d4 4400      		.word	68
+ 2377 06d6 4400      		.word	68
+ 2378 06d8 2800      		.word	40
+ 2379 06da 5400      		.word	84
+ 2380 06dc 2800      		.word	40
+ 2381 06de 1000      		.word	16
+ 2382 06e0 5500      		.word	85
+ 2383 06e2 0000      		.word	0
+ 2384 06e4 AA00      		.word	170
+ 2385 06e6 0000      		.word	0
+ 2386 06e8 5500      		.word	85
+ 2387 06ea 5500      		.word	85
+ 2388 06ec AA00      		.word	170
+ 2389 06ee 5500      		.word	85
+ 2390 06f0 AA00      		.word	170
+ 2391 06f2 5500      		.word	85
+ 2392 06f4 AA00      		.word	170
+ 2393 06f6 5500      		.word	85
+ 2394 06f8 AA00      		.word	170
+ 2395 06fa 5500      		.word	85
+ 2396 06fc AA00      		.word	170
+ 2397 06fe 0000      		.word	0
+ 2398 0700 0000      		.word	0
+ 2399 0702 0000      		.word	0
+ 2400 0704 FF00      		.word	255
+ 2401 0706 0000      		.word	0
+ 2402 0708 0800      		.word	8
+ 2403 070a 0800      		.word	8
+ 2404 070c 0800      		.word	8
+ 2405 070e FF00      		.word	255
+ 2406 0710 0000      		.word	0
+ 2407 0712 2800      		.word	40
+ 2408 0714 2800      		.word	40
+ 2409 0716 2800      		.word	40
+ 2410 0718 FF00      		.word	255
+ 2411 071a 0000      		.word	0
+ 2412 071c 0800      		.word	8
+ 2413 071e 0800      		.word	8
+ 2414 0720 FF00      		.word	255
+ 2415 0722 0000      		.word	0
+ 2416 0724 FF00      		.word	255
+ 2417 0726 0800      		.word	8
+ 2418 0728 0800      		.word	8
+ 2419 072a 0F00      		.word	15
+ 2420 072c 0800      		.word	8
+ 2421 072e 0F00      		.word	15
+ 2422 0730 2800      		.word	40
+ 2423 0732 2800      		.word	40
+ 2424 0734 2800      		.word	40
+ 2425 0736 3F00      		.word	63
+ 2426 0738 0000      		.word	0
+ 2427 073a 2800      		.word	40
+ 2428 073c 2800      		.word	40
+ 2429 073e EF00      		.word	239
+ 2430 0740 0000      		.word	0
+ 2431 0742 FF00      		.word	255
+ 2432 0744 0000      		.word	0
+ 2433 0746 0000      		.word	0
+ 2434 0748 FF00      		.word	255
+ 2435 074a 0000      		.word	0
+ 2436 074c FF00      		.word	255
+ 2437 074e 2800      		.word	40
+ 2438 0750 2800      		.word	40
+ 2439 0752 2F00      		.word	47
+ 2440 0754 2000      		.word	32
+ 2441 0756 3F00      		.word	63
+ 2442 0758 2800      		.word	40
+ 2443 075a 2800      		.word	40
+ 2444 075c E800      		.word	232
+ 2445 075e 0800      		.word	8
+ 2446 0760 F800      		.word	248
+ 2447 0762 0800      		.word	8
+ 2448 0764 0800      		.word	8
+ 2449 0766 F800      		.word	248
+ 2450 0768 0800      		.word	8
+ 2451 076a F800      		.word	248
+ 2452 076c 2800      		.word	40
+ 2453 076e 2800      		.word	40
+ 2454 0770 2800      		.word	40
+ 2455 0772 F800      		.word	248
+ 2456 0774 0000      		.word	0
+ 2457 0776 0800      		.word	8
+ 2458 0778 0800      		.word	8
+ 2459 077a 0800      		.word	8
+ 2460 077c 0F00      		.word	15
+ 2461 077e 0000      		.word	0
+ 2462 0780 0000      		.word	0
+ 2463 0782 0000      		.word	0
+ 2464 0784 0000      		.word	0
+ 2465 0786 F800      		.word	248
+ 2466 0788 0800      		.word	8
+ 2467 078a 0800      		.word	8
+ 2468 078c 0800      		.word	8
+ 2469 078e 0800      		.word	8
+ 2470 0790 F800      		.word	248
+ 2471 0792 0800      		.word	8
+ 2472 0794 0800      		.word	8
+ 2473 0796 0800      		.word	8
+ 2474 0798 0800      		.word	8
+ 2475 079a 0F00      		.word	15
+ 2476 079c 0800      		.word	8
+ 2477 079e 0000      		.word	0
+ 2478 07a0 0000      		.word	0
+ 2479 07a2 0000      		.word	0
+ 2480 07a4 FF00      		.word	255
+ 2481 07a6 0800      		.word	8
+ 2482 07a8 0800      		.word	8
+ 2483 07aa 0800      		.word	8
+ 2484 07ac 0800      		.word	8
+ 2485 07ae 0800      		.word	8
+ 2486 07b0 0800      		.word	8
+ 2487 07b2 0800      		.word	8
+ 2488 07b4 0800      		.word	8
+ 2489 07b6 0800      		.word	8
+ 2490 07b8 FF00      		.word	255
+ 2491 07ba 0800      		.word	8
+ 2492 07bc 0000      		.word	0
+ 2493 07be 0000      		.word	0
+ 2494 07c0 0000      		.word	0
+ 2495 07c2 FF00      		.word	255
+ 2496 07c4 2800      		.word	40
+ 2497 07c6 0000      		.word	0
+ 2498 07c8 0000      		.word	0
+ 2499 07ca FF00      		.word	255
+ 2500 07cc 0000      		.word	0
+ 2501 07ce FF00      		.word	255
+ 2502 07d0 0000      		.word	0
+ 2503 07d2 0000      		.word	0
+ 2504 07d4 F800      		.word	248
+ 2505 07d6 0800      		.word	8
+ 2506 07d8 E800      		.word	232
+ 2507 07da 0000      		.word	0
+ 2508 07dc 0000      		.word	0
+ 2509 07de 3F00      		.word	63
+ 2510 07e0 2000      		.word	32
+ 2511 07e2 2F00      		.word	47
+ 2512 07e4 2800      		.word	40
+ 2513 07e6 2800      		.word	40
+ 2514 07e8 E800      		.word	232
+ 2515 07ea 0800      		.word	8
+ 2516 07ec E800      		.word	232
+ 2517 07ee 2800      		.word	40
+ 2518 07f0 2800      		.word	40
+ 2519 07f2 2F00      		.word	47
+ 2520 07f4 2000      		.word	32
+ 2521 07f6 2F00      		.word	47
+ 2522 07f8 0000      		.word	0
+ 2523 07fa 0000      		.word	0
+ 2524 07fc FF00      		.word	255
+ 2525 07fe 0000      		.word	0
+ 2526 0800 EF00      		.word	239
+ 2527 0802 2800      		.word	40
+ 2528 0804 2800      		.word	40
+ 2529 0806 2800      		.word	40
+ 2530 0808 2800      		.word	40
+ 2531 080a 2800      		.word	40
+ 2532 080c 2800      		.word	40
+ 2533 080e 2800      		.word	40
+ 2534 0810 EF00      		.word	239
+ 2535 0812 0000      		.word	0
+ 2536 0814 EF00      		.word	239
+ 2537 0816 2800      		.word	40
+ 2538 0818 2800      		.word	40
+ 2539 081a 2800      		.word	40
+ 2540 081c E800      		.word	232
+ 2541 081e 2800      		.word	40
+ 2542 0820 0800      		.word	8
+ 2543 0822 0800      		.word	8
+ 2544 0824 F800      		.word	248
+ 2545 0826 0800      		.word	8
+ 2546 0828 F800      		.word	248
+ 2547 082a 2800      		.word	40
+ 2548 082c 2800      		.word	40
+ 2549 082e 2800      		.word	40
+ 2550 0830 2F00      		.word	47
+ 2551 0832 2800      		.word	40
+ 2552 0834 0800      		.word	8
+ 2553 0836 0800      		.word	8
+ 2554 0838 0F00      		.word	15
+ 2555 083a 0800      		.word	8
+ 2556 083c 0F00      		.word	15
+ 2557 083e 0000      		.word	0
+ 2558 0840 0000      		.word	0
+ 2559 0842 F800      		.word	248
+ 2560 0844 0800      		.word	8
+ 2561 0846 F800      		.word	248
+ 2562 0848 0000      		.word	0
+ 2563 084a 0000      		.word	0
+ 2564 084c 0000      		.word	0
+ 2565 084e F800      		.word	248
+ 2566 0850 2800      		.word	40
+ 2567 0852 0000      		.word	0
+ 2568 0854 0000      		.word	0
+ 2569 0856 0000      		.word	0
+ 2570 0858 3F00      		.word	63
+ 2571 085a 2800      		.word	40
+ 2572 085c 0000      		.word	0
+ 2573 085e 0000      		.word	0
+ 2574 0860 0F00      		.word	15
+ 2575 0862 0800      		.word	8
+ 2576 0864 0F00      		.word	15
+ 2577 0866 0800      		.word	8
+ 2578 0868 0800      		.word	8
+ 2579 086a FF00      		.word	255
+ 2580 086c 0800      		.word	8
+ 2581 086e FF00      		.word	255
+ 2582 0870 2800      		.word	40
+ 2583 0872 2800      		.word	40
+ 2584 0874 2800      		.word	40
+ 2585 0876 FF00      		.word	255
+ 2586 0878 2800      		.word	40
+ 2587 087a 0800      		.word	8
+ 2588 087c 0800      		.word	8
+ 2589 087e 0800      		.word	8
+ 2590 0880 F800      		.word	248
+ 2591 0882 0000      		.word	0
+ 2592 0884 0000      		.word	0
+ 2593 0886 0000      		.word	0
+ 2594 0888 0000      		.word	0
+ 2595 088a 0F00      		.word	15
+ 2596 088c 0800      		.word	8
+ 2597 088e FF00      		.word	255
+ 2598 0890 FF00      		.word	255
+ 2599 0892 FF00      		.word	255
+ 2600 0894 FF00      		.word	255
+ 2601 0896 FF00      		.word	255
+ 2602 0898 0F00      		.word	15
+ 2603 089a 0F00      		.word	15
+ 2604 089c 0F00      		.word	15
+ 2605 089e 0F00      		.word	15
+ 2606 08a0 0F00      		.word	15
+ 2607 08a2 FF00      		.word	255
+ 2608 08a4 FF00      		.word	255
+ 2609 08a6 FF00      		.word	255
+ 2610 08a8 0000      		.word	0
+ 2611 08aa 0000      		.word	0
+ 2612 08ac 0000      		.word	0
+ 2613 08ae 0000      		.word	0
+ 2614 08b0 0000      		.word	0
+ 2615 08b2 FF00      		.word	255
+ 2616 08b4 FF00      		.word	255
+ 2617 08b6 F000      		.word	240
+ 2618 08b8 F000      		.word	240
+ 2619 08ba F000      		.word	240
+ 2620 08bc F000      		.word	240
+ 2621 08be F000      		.word	240
+ 2622 08c0 1C00      		.word	28
+ 2623 08c2 2200      		.word	34
+ 2624 08c4 2200      		.word	34
+ 2625 08c6 1C00      		.word	28
+ 2626 08c8 2200      		.word	34
+ 2627 08ca 3E00      		.word	62
+ 2628 08cc 5400      		.word	84
+ 2629 08ce 5400      		.word	84
+ 2630 08d0 7C00      		.word	124
+ 2631 08d2 2800      		.word	40
+ 2632 08d4 7E00      		.word	126
+ 2633 08d6 4000      		.word	64
+ 2634 08d8 4000      		.word	64
+ 2635 08da 6000      		.word	96
+ 2636 08dc 6000      		.word	96
+ 2637 08de 4000      		.word	64
+ 2638 08e0 7E00      		.word	126
+ 2639 08e2 4000      		.word	64
+ 2640 08e4 7E00      		.word	126
+ 2641 08e6 4000      		.word	64
+ 2642 08e8 C600      		.word	198
+ 2643 08ea AA00      		.word	170
+ 2644 08ec 9200      		.word	146
+ 2645 08ee 8200      		.word	130
+ 2646 08f0 C600      		.word	198
+ 2647 08f2 1C00      		.word	28
+ 2648 08f4 2200      		.word	34
+ 2649 08f6 2200      		.word	34
+ 2650 08f8 3C00      		.word	60
+ 2651 08fa 2000      		.word	32
+ 2652 08fc 0200      		.word	2
+ 2653 08fe 7E00      		.word	126
+ 2654 0900 0400      		.word	4
+ 2655 0902 7800      		.word	120
+ 2656 0904 0400      		.word	4
+ 2657 0906 6000      		.word	96
+ 2658 0908 4000      		.word	64
+ 2659 090a 7E00      		.word	126
+ 2660 090c 4000      		.word	64
+ 2661 090e 4000      		.word	64
+ 2662 0910 9900      		.word	153
+ 2663 0912 A500      		.word	165
+ 2664 0914 E700      		.word	231
+ 2665 0916 A500      		.word	165
+ 2666 0918 9900      		.word	153
+ 2667 091a 3800      		.word	56
+ 2668 091c 5400      		.word	84
+ 2669 091e 9200      		.word	146
+ 2670 0920 5400      		.word	84
+ 2671 0922 3800      		.word	56
+ 2672 0924 3200      		.word	50
+ 2673 0926 4E00      		.word	78
+ 2674 0928 8000      		.word	128
+ 2675 092a 4E00      		.word	78
+ 2676 092c 3200      		.word	50
+ 2677 092e 0C00      		.word	12
+ 2678 0930 5200      		.word	82
+ 2679 0932 B200      		.word	178
+ 2680 0934 B200      		.word	178
+ 2681 0936 0C00      		.word	12
+ 2682 0938 0C00      		.word	12
+ 2683 093a 1200      		.word	18
+ 2684 093c 1E00      		.word	30
+ 2685 093e 1200      		.word	18
+ 2686 0940 0C00      		.word	12
+ 2687 0942 3D00      		.word	61
+ 2688 0944 4600      		.word	70
+ 2689 0946 5A00      		.word	90
+ 2690 0948 6200      		.word	98
+ 2691 094a BC00      		.word	188
+ 2692 094c 7C00      		.word	124
+ 2693 094e 9200      		.word	146
+ 2694 0950 9200      		.word	146
+ 2695 0952 9200      		.word	146
+ 2696 0954 0000      		.word	0
+ 2697 0956 7E00      		.word	126
+ 2698 0958 8000      		.word	128
+ 2699 095a 8000      		.word	128
+ 2700 095c 8000      		.word	128
+ 2701 095e 7E00      		.word	126
+ 2702 0960 5400      		.word	84
+ 2703 0962 5400      		.word	84
+ 2704 0964 5400      		.word	84
+ 2705 0966 5400      		.word	84
+ 2706 0968 5400      		.word	84
+ 2707 096a 2200      		.word	34
+ 2708 096c 2200      		.word	34
+ 2709 096e FA00      		.word	250
+ 2710 0970 2200      		.word	34
+ 2711 0972 2200      		.word	34
+ 2712 0974 0200      		.word	2
+ 2713 0976 8A00      		.word	138
+ 2714 0978 5200      		.word	82
+ 2715 097a 2200      		.word	34
+ 2716 097c 0200      		.word	2
+ 2717 097e 0200      		.word	2
+ 2718 0980 2200      		.word	34
+ 2719 0982 5200      		.word	82
+ 2720 0984 8A00      		.word	138
+ 2721 0986 0200      		.word	2
+ 2722 0988 0000      		.word	0
+ 2723 098a 0000      		.word	0
+ 2724 098c FF00      		.word	255
+ 2725 098e 8000      		.word	128
+ 2726 0990 C000      		.word	192
+ 2727 0992 0700      		.word	7
+ 2728 0994 0100      		.word	1
+ 2729 0996 FF00      		.word	255
+ 2730 0998 0000      		.word	0
+ 2731 099a 0000      		.word	0
+ 2732 099c 1000      		.word	16
+ 2733 099e 1000      		.word	16
+ 2734 09a0 D600      		.word	214
+ 2735 09a2 D600      		.word	214
+ 2736 09a4 1000      		.word	16
+ 2737 09a6 6C00      		.word	108
+ 2738 09a8 4800      		.word	72
+ 2739 09aa 6C00      		.word	108
+ 2740 09ac 2400      		.word	36
+ 2741 09ae 6C00      		.word	108
+ 2742 09b0 6000      		.word	96
+ 2743 09b2 F000      		.word	240
+ 2744 09b4 9000      		.word	144
+ 2745 09b6 F000      		.word	240
+ 2746 09b8 6000      		.word	96
+ 2747 09ba 0000      		.word	0
+ 2748 09bc 0000      		.word	0
+ 2749 09be 1800      		.word	24
+ 2750 09c0 1800      		.word	24
+ 2751 09c2 0000      		.word	0
+ 2752 09c4 0000      		.word	0
+ 2753 09c6 0000      		.word	0
+ 2754 09c8 0800      		.word	8
+ 2755 09ca 0800      		.word	8
+ 2756 09cc 0000      		.word	0
+ 2757 09ce 0C00      		.word	12
+ 2758 09d0 0200      		.word	2
+ 2759 09d2 FF00      		.word	255
+ 2760 09d4 8000      		.word	128
+ 2761 09d6 8000      		.word	128
+ 2762 09d8 0000      		.word	0
+ 2763 09da F800      		.word	248
+ 2764 09dc 8000      		.word	128
+ 2765 09de 8000      		.word	128
+ 2766 09e0 7800      		.word	120
+ 2767 09e2 0000      		.word	0
+ 2768 09e4 9800      		.word	152
+ 2769 09e6 B800      		.word	184
+ 2770 09e8 E800      		.word	232
+ 2771 09ea 4800      		.word	72
+ 2772 09ec 0000      		.word	0
+ 2773 09ee 3C00      		.word	60
+ 2774 09f0 3C00      		.word	60
+ 2775 09f2 3C00      		.word	60
+ 2776 09f4 3C00      		.word	60
+ 2778               		.text
+ 2780               	.Letext0:
+ 2781               		.ident	"GCC: (GNU) 4.9.3"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 glcd.c
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:118    .text:0000000000000000 setpixel
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:218    .text:0000000000000070 drawbitmap
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:392    .text:000000000000015a drawchar
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1501   .progmem.data:0000000000000000 font
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:468    .text:000000000000019c drawstring
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:545    .text:00000000000001e8 clearpixel
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:599    .text:0000000000000220 drawline
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:804    .text:00000000000002f4 fillrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:904    .text:000000000000035c drawrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1035   .text:00000000000003fa drawcircle
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1240   .text:0000000000000512 fillcircle
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccCqnOOO.s:1473   .text:0000000000000624 clear_buffer
+
+UNDEFINED SYMBOLS
+uart_putchar
