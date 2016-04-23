@@ -18,7 +18,8 @@
 #include "../ST7565-LCD/c/glcd.h"
 #include "../ST7565-LCD/c/stlcd.h"
 
-#define CHAR_PADDING
+#define CHAR_PADDING 6
+
 uint8_t buffer[128 * 64 / 8];
 
 // does all of the initialization work for the display
@@ -31,7 +32,6 @@ void initializeDisplay() {
 // 
 void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
 	int shift = 100;
-	int padding = 6;
 	clear_buffer(buffer);
 	drawchar(buffer, shift + 0 * padding, 0, 'M');
 	drawchar(buffer, shift + 1 * padding, 0, 'e');

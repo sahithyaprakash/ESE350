@@ -3726,30 +3726,30 @@
  3368               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 stlcd.c
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:5      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:6      *ABS*:0000000000000001 __zero_reg__
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:115    .text:0000000000000000 testdrawchar
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:1288   .data:0000000000000000 buffer
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:172    .text:0000000000000032 testdrawcircle
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:220    .text:0000000000000054 testdrawrect
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:284    .text:0000000000000096 testfillrect
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:349    .text:00000000000000da spiwrite
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:409    .text:0000000000000104 st7565_command
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:431    .text:000000000000010a st7565_init
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:577    .text:000000000000018c st7565_data
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:599    .text:0000000000000192 clear_screen
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:667    .text:00000000000001ce st7565_set_brightness
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:700    .text:00000000000001e2 setup
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:753    .text:0000000000000206 write_buffer
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:2316   .data:0000000000000400 pagemap
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:885    .text:00000000000002b6 testdrawbitmap
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:2334   .progmem.data:0000000000000000 logo16_glcd_bmp
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:1122   .text:000000000000040e testdrawline
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:1266   .text:00000000000004a2 get_buffer
-/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccqMS21W.s:2329   .bss:0000000000000000 is_reversed
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:115    .text:0000000000000000 testdrawchar
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:1288   .data:0000000000000000 buffer
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:172    .text:0000000000000032 testdrawcircle
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:220    .text:0000000000000054 testdrawrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:284    .text:0000000000000096 testfillrect
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:349    .text:00000000000000da spiwrite
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:409    .text:0000000000000104 st7565_command
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:431    .text:000000000000010a st7565_init
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:577    .text:000000000000018c st7565_data
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:599    .text:0000000000000192 clear_screen
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:667    .text:00000000000001ce st7565_set_brightness
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:700    .text:00000000000001e2 setup
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:753    .text:0000000000000206 write_buffer
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:2316   .data:0000000000000400 pagemap
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:885    .text:00000000000002b6 testdrawbitmap
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:2334   .progmem.data:0000000000000000 logo16_glcd_bmp
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:1122   .text:000000000000040e testdrawline
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:1266   .text:00000000000004a2 get_buffer
+/var/folders/jv/wcsnvvsx27q4dp2b03sf5blh0000gn/T//ccG42SdY.s:2329   .bss:0000000000000000 is_reversed
 
 UNDEFINED SYMBOLS
 __udivmodqi4
