@@ -12,6 +12,8 @@
 // blog: philliphtrentiii.info/embedded-systems-blog
 
 #include "sensor.h"
+#include <unistd.h>
+#include <avr/io.h>
 
 // sets the given registers given bit number to the given value
 unsigned int setOnlyBitInRegisterToValue(unsigned int reg, unsigned int bit, unsigned int value) {
@@ -105,30 +107,26 @@ void initializeSensor() {
 
 //gets the highest row that is conducting
 unsigned int highestConductorForColumn(unsigned int columnNumber) {
+	unsigned int highestConductor = 0x00;
 	switchPowerToColumnNumber(columnNumber);
-	for (current = 0x00; current < 0xA9; current ++) {
-		switchMuxesToHeight(current);
+	for (unsigned int row = 0x00; row < 169; row ++) {
+		switchMuxesToHeight(row);
 
 		//wait for a little bit
-		for (unsigned int a = 0x00; a < 0xFF; a ++);
+		//for (unsigned int a = 0x00; a < 0xFF; a ++);
 
-		if (((INPUT_PIN_REG >> (INPUT_PIN - 1)) & 0x01) == 0x01) {
-			highest_conductor = current + 1;
+		if ((INPUT_PIN_REG & _BV(INPUT_PIN)) > 0x00) {
+			highestConductor = row + 1;
 		}
 	}
-	liquidAmt = liquidAmount(highest_conductor);
-	// printf("Highest Conductor: (%i, %i) ", highest_conductor, column);
-	// printf(" | %u mL ", liquidAmt);
-	// printf(" | %u V \n", conductingVoltage);
-
-	highest_conductor = 0x00;
+	return highestConductor;
 }
 
 //switches MUXs to lowest row in the designated column, and starts the ADC
 unsigned int voltageFromLowestConductorInColumn(unsigned int columnNumber) {
 	switchPowerToColumnNumber(columnNumber);
 	switchMuxesToHeight(0x00);
-	_delay_ms(1);
+	for (unsigned int a = 0x00; a < 0xFF; a ++);
 	getConductivity();
 }
 

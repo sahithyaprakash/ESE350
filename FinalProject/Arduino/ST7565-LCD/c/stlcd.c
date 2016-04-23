@@ -199,7 +199,7 @@ void setup(void) {
   // testdrawbitmap(buffer, logo16_glcd_bmp, 16, 16);
 
   //LED_PORT &= ~_BV(LED);
-  write_buffer(buffer);
+  //write_buffer(buffer);
 }
 
 #define NUMFLAKES 10

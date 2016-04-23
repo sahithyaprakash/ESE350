@@ -28,7 +28,7 @@
 #define MUX_SEL_LVL2_BIT2 PORTB4
 #define MUX_SEL_LVL2_BIT3 PORTB5
 
-#define INPUT_PIN_REG DDRC		// register for input pin from MUX array
+#define INPUT_PIN_REG PINC		// register for input pin from MUX array
 #define INPUT_PIN PINC4			
 
 //performs any initialization code like setting registers and 
