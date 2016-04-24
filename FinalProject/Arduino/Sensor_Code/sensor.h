@@ -38,4 +38,4 @@ void initializeSensor();
 unsigned int highestConductorForColumn(unsigned int columnNumber);
 
 //switches MUXs to lowest row in the designated column, and starts the ADC
-unsigned int voltageFromLowestConductorInColumn(unsigned int columnNumber);
+double voltageFromLowestConductorInColumn(unsigned int columnNumber);

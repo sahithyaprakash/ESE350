@@ -13,35 +13,36 @@
 // - - - -  INITIALIZATION - - - -
 
 // Initializes all variables for the storage class
+// param frequencyOfCollection: number of samples taken per hour 
 void initializeStorage(unsigned int frequencyOfCollection);
 
 // - - - - STORAGE - - - -
 
 // Clears all the data currently in storage
-double clearData();
+void clearData();
 
 // Takes in the total amount of liquid currently in the container (summed over
 // all columns in mL) and adds the datapoint. 
-double addData(double liquidAmount);
+float addData(double liquidAmount);
 
 // - - - - MATH - - - -
 
 // takes in the highest conductor of an arbitrary column and returns
 // the volume of liquid in that column (mL)
-double volumeFromHighestConductor(unsigned int highestConductor);
+float volumeFromHighestConductor(unsigned int highestConductor);
 
 //returns the conductivity in Siemens from the voltage
-double conductivityFromVoltage(unsigned int voltage);
+float conductivityFromVoltage(unsigned int voltage);
 
 // - - - - CALCULATIONS ON DATA - - - -
 
 // returns the total amount of output in mL from the 
 // start of collection to the most recent data point
-double totalOutputFromStartOfCollection();
+float totalOutputFromStartOfCollection();
 
 // returns the total amout of output in mL from just the last hour
-double totalOutputFromTheLastHour();
+float totalOutputFromTheLastHour();
 
 //
-double averageOutputFromStartOfCollection();
+float averageOutputFromStartOfCollection();
 

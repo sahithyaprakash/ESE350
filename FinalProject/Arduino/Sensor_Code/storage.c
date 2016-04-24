@@ -11,38 +11,99 @@
 // blog: philliphtrentiii.info/embedded-systems-blog
 
 #include "storage.h"
+#include <stdlib.h>
+#include <Math.h>
+#include <String.h>
+#define ARBITRARY_SIZE 1000
+
+
 // - - - -  INITIALIZATION - - - -
 
+int index;
+int totalNumOfSamples;
+int time_counter;
+float totalOutputFromBeginning;
+float outputLastHour;
+float* volumeSamples;
+
 // Initializes all variables for the storage class
-void initializeStorage(unsigned int frequencyOfCollection);
+// param frequencyOfCollection: number of samples taken per hour 
+void initializeStorage(unsigned int frequencyOfCollection) {
+
+	volumeSamples = malloc(frequencyOfCollection * sizeof(float)); 
+	index = 0; 
+	totalNumOfSamples = frequencyOfCollection; 
+	time_counter = 0; 
+	totalOutputFromBeginning = 0.0; 
+	outputLastHour = 0.0; 
+
+
+}
 
 // - - - - STORAGE - - - -
 
 // Clears all the data currently in storage
-double clearData();
+void clearData() {
+
+	totalOutputFromBeginning += volumeSamples[totalNumOfSamples - 1]; 
+	memset(volumeSamples, 0, sizeof(volumeSamples));
+	index = 0; 
+
+}
 
 // Takes in the total amount of liquid currently in the container (summed over
 // all columns in mL) and adds the datapoint. 
-double addData(double liquidAmount);
+float addData(double liquidAmount) {
+
+	volumeSamples[index] = liquidAmount;
+
+	if (index < totalNumOfSamples) {
+		index ++;
+	} else {
+		index = 0; 
+	}
+
+	time_counter ++; 
+}
 
 // - - - - MATH - - - -
 
 // takes in the highest conductor of an arbitrary column and returns
 // the volume of liquid in that column (mL)
-double volumeFromHighestConductor(unsigned int highestConductor);
+float volumeFromHighestConductor(unsigned int highestConductor) {
+
+	if (highestConductor > 0) { 
+		float actuationDepth = 2.5;
+		float unitVolume = 3.175;
+		return (actuationDepth + ((highestConductor - 1) * unitVolume));
+	}
+}
 
 //returns the conductivity in Siemens from the voltage
-double conductivityFromVoltage(unsigned int voltage);
+float conductivityFromVoltage(unsigned int voltage) {
+}
 
 // - - - - CALCULATIONS ON DATA - - - -
 
 // returns the total amount of output in mL from the 
 // start of collection to the most recent data point
-double totalOutputFromStartOfCollection();
+float totalOutputFromStartOfCollection() {
+
+	float totalOutput = volumeSamples[totalNumOfSamples - 1] - volumeSamples[0]; 
+	outputLastHour = totalOutput; 
+	return totalOutput; 
+}
 
 // returns the total amout of output in mL from just the last hour
-double totalOutputFromTheLastHour();
+float totalOutputFromTheLastHour() {
 
-//
-double averageOutputFromStartOfCollection();
+	return outputLastHour; 
+}
+
+//Total output / total time 
+float averageOutputFromStartOfCollection() {
+
+	float total_time = time_counter / totalNumOfSamples; 
+	return (totalOutputFromBeginning / total_time);
+}
 

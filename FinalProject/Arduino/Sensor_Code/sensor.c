@@ -123,7 +123,7 @@ unsigned int highestConductorForColumn(unsigned int columnNumber) {
 }
 
 //switches MUXs to lowest row in the designated column, and starts the ADC
-unsigned int voltageFromLowestConductorInColumn(unsigned int columnNumber) {
+double voltageFromLowestConductorInColumn(unsigned int columnNumber) {
 	switchPowerToColumnNumber(columnNumber);
 	switchMuxesToHeight(0x00);
 	for (unsigned int a = 0x00; a < 0xFF; a ++);
