@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <avr/io.h>
+#include <math.h>
 #include "../Arduino_ATMega/uart.h"
 #include "sensor.h"
 #include "storage.h"
@@ -25,19 +26,25 @@ int main (void) {
 
 	while (1) {
 		unsigned int highest_conductor = 0x00;
-		unsigned int current;
+		float currentVolume = 0;
 		float conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
 
-		for (unsigned int column = 0x00; column < 7; column ++) {
+		for (uint8_t column = 0; column < 7; column ++) {
 			highest_conductor = highestConductorForColumn(column);
 			// liquidAmt = liquidAmount(highest_conductor);
 			printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
 			//printf(" | %u mL ", liquidAmt);
 			//printf(" | %u V \n", conductingVoltage);
-
+			currentVolume += volumeFromHighestConductor(highest_conductor);
 			highest_conductor = 0x00;
 		}
+
+		float beforeDecimalPlace = floorf(currentVolume);
+		float afterDecimalPlace = floorf((currentVolume - beforeDecimalPlace) * 100);
+
+		currentVolume = 0;
+
 
 	}
 }

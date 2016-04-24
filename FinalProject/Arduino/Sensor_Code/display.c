@@ -1,4 +1,4 @@
-// display.c 
+// display.c
 //
 // ESE 350 Final Project
 // by Phillip Trent & Sahithya Prakash
@@ -26,37 +26,75 @@ uint8_t buffer[128 * 64 / 8];
 void initializeDisplay() {
 	setup();
 	*buffer = get_buffer();
+	clear_buffer(buffer);
+	setOutputPerHour(23, 10);
+	setTotalOutput(0, 0);
 	updateDisplay();
 }
 
-// 
-void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-	int shift = 100;
-	clear_buffer(buffer);
-	drawchar(buffer, shift + 0 * CHAR_PADDING, 0, 'M');
-	drawchar(buffer, shift + 1 * CHAR_PADDING, 0, 'e');
-	drawchar(buffer, shift + 2 * CHAR_PADDING, 0, 'n');
-	drawchar(buffer, shift + 3 * CHAR_PADDING, 0, 'u');
-
-	drawchar(buffer, shift + 0 * CHAR_PADDING, 1, 'D');
-	drawchar(buffer, shift + 1 * CHAR_PADDING, 1, 'i');
-	drawchar(buffer, shift + 2 * CHAR_PADDING, 1, 's');
-	drawchar(buffer, shift + 3 * CHAR_PADDING, 1, 'p');
-
-	drawchar(buffer, 0 * CHAR_PADDING, 0, 'H');
-	drawchar(buffer, 1 * CHAR_PADDING, 0, 'I');
-	drawchar(buffer, 2 * CHAR_PADDING, 0, 'S');
-	drawchar(buffer, 3 * CHAR_PADDING, 0, 'T');
-	drawchar(buffer, 4 * CHAR_PADDING, 0, 'O');
-	drawchar(buffer, 5 * CHAR_PADDING, 0, 'G');
-	drawchar(buffer, 6 * CHAR_PADDING, 0, 'R');
-	drawchar(buffer, 7 * CHAR_PADDING, 0, 'A');
-	drawchar(buffer, 8 * CHAR_PADDING, 0, 'M');
+void drawString(char* string, uint8_t length, uint8_t line, uint8_t shift) {
+	for (int index = 0; index < length; index ++) {
+		drawchar(buffer, shift + index * CHAR_PADDING, line, string[index]);
+	}
 }
 
-// 
-void totalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-	
+//
+void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+	int line = 6;
+	int shift = 0;
+	char label[] = "LAST HOUR";
+
+	char sigDigs[8];
+	sigDigs[0] = (((beforeDecimalPlace/100) % 10) + '0');
+	sigDigs[1] = (((beforeDecimalPlace/10) % 10) + '0');
+	sigDigs[2] = ((beforeDecimalPlace % 10) + '0');
+	sigDigs[3] = '.';
+	sigDigs[4] = (((afterDecimalPlace/10) % 10) + '0');
+	sigDigs[5] = ((afterDecimalPlace % 10) + '0');
+	sigDigs[6] = 'm';
+	sigDigs[7] = 'L';
+
+	if (beforeDecimalPlace < 100) {
+		sigDigs[0] = ' ';
+	}
+
+	if (beforeDecimalPlace < 10) {
+		sigDigs[1] = ' ';
+	}
+
+	drawString(sigDigs, sizeof(sigDigs), line, shift);
+	drawString(label, strlen(label), line + 1, shift);
+}
+
+//
+void setTotalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+	int shift = 0;
+	int line = 2;
+	char label[] = "  TOTAL";
+	char sigDigs[9];
+	sigDigs[0] = (((beforeDecimalPlace/1000) % 10) + '0');
+	sigDigs[1] = (((beforeDecimalPlace/100) % 10) + '0');
+	sigDigs[2] = (((beforeDecimalPlace/10) % 10) + '0');
+	sigDigs[3] = ((beforeDecimalPlace % 10) + '0');
+	sigDigs[4] = '.';
+	sigDigs[5] = (((afterDecimalPlace/10) % 10) + '0');
+	sigDigs[6] = ((afterDecimalPlace % 10) + '0');
+	sigDigs[7] = 'm';
+	sigDigs[8] = 'L';
+
+	if (beforeDecimalPlace < 1000) {
+		sigDigs[0] = ' ';
+	}
+
+	if (beforeDecimalPlace < 100) {
+		sigDigs[1] = ' ';
+	}
+	if (beforeDecimalPlace < 10) {
+		sigDigs[2] = ' ';
+	}
+
+	drawString(sigDigs, sizeof(sigDigs), line, shift);
+	drawString(label, strlen(label), line + 1, shift);
 }
 
 // call when you want the entire display to be updated
