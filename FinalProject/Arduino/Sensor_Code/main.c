@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <avr/io.h>
-#include <math.h>
 #include "../Arduino_ATMega/uart.h"
 #include "sensor.h"
 #include "storage.h"
@@ -13,9 +12,6 @@ int main (void) {
 	uint8_t color = 0;
 
 	uart_inits();
-	//setupADC();
-	initializeSensor();
-	initializeDisplay();
 
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
 
@@ -24,9 +20,13 @@ int main (void) {
 	DDRC = 0xEF; //a/ll outputs except for pin 4
 	DDRD = 0xFF;
 
+	initializeSensor();
+	initializeDisplay();
+	initializeStorage(60);
+
 	while (1) {
 		unsigned int highest_conductor = 0x00;
-		float currentVolume = 0;
+		double currentVolume = 0;
 		float conductingVoltage = 0x00;
 		float liquidAmt = 0x00;
 
@@ -39,12 +39,10 @@ int main (void) {
 			currentVolume += volumeFromHighestConductor(highest_conductor);
 			highest_conductor = 0x00;
 		}
+		unsigned int beforeDecimalPlace = (unsigned int) currentVolume;
+		unsigned int afterDecimalPlace = (unsigned int) ((currentVolume - beforeDecimalPlace) * 100);
 
-		float beforeDecimalPlace = floorf(currentVolume);
-		float afterDecimalPlace = floorf((currentVolume - beforeDecimalPlace) * 100);
-
-		currentVolume = 0;
-
-
+		setTotalOutput(beforeDecimalPlace, afterDecimalPlace);
+		updateDisplay();
 	}
 }
