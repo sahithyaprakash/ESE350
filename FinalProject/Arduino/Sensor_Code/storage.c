@@ -24,20 +24,18 @@ int totalNumOfSamples;
 int time_counter;
 float totalOutputFromBeginning;
 float outputLastHour;
-float* volumeSamples;
+float volumeSamples[60];
 
 // Initializes all variables for the storage class
-// param frequencyOfCollection: number of samples taken per hour 
+// param frequencyOfCollection: number of samples taken per hour
 void initializeStorage(unsigned int frequencyOfCollection) {
 
-	volumeSamples = malloc(frequencyOfCollection * sizeof(float)); 
-	index = 0; 
-	totalNumOfSamples = frequencyOfCollection; 
-	time_counter = 0; 
-	totalOutputFromBeginning = 0.0; 
-	outputLastHour = 0.0; 
-
-
+	//volumeSamples = malloc(frequencyOfCollection * sizeof(float));
+	index = 0;
+	totalNumOfSamples = frequencyOfCollection;
+	time_counter = 0;
+	totalOutputFromBeginning = 0.0;
+	outputLastHour = 0.0;
 }
 
 // - - - - STORAGE - - - -
@@ -45,25 +43,20 @@ void initializeStorage(unsigned int frequencyOfCollection) {
 // Clears all the data currently in storage
 void clearData() {
 
-	totalOutputFromBeginning += volumeSamples[totalNumOfSamples - 1]; 
+	totalOutputFromBeginning += volumeSamples[totalNumOfSamples - 1];
 	memset(volumeSamples, 0, sizeof(volumeSamples));
-	index = 0; 
+	index = 0;
 
 }
 
 // Takes in the total amount of liquid currently in the container (summed over
-// all columns in mL) and adds the datapoint. 
+// all columns in mL) and adds the datapoint.
 float addData(double liquidAmount) {
 
-	volumeSamples[index] = liquidAmount;
-
-	if (index < totalNumOfSamples) {
-		index ++;
-	} else {
-		index = 0; 
-	}
-
-	time_counter ++; 
+	volumeSamples[index] = (float) liquidAmount;
+	printf("just put %i at index: %i", volumeSamples[index], index);
+	index = (index >= totalNumOfSamples - 1 ? 0 : index + 1);
+	time_counter ++;
 }
 
 // - - - - MATH - - - -
@@ -72,7 +65,7 @@ float addData(double liquidAmount) {
 // the volume of liquid in that column (mL)
 float volumeFromHighestConductor(unsigned int highestConductor) {
 
-	if (highestConductor > 0) { 
+	if (highestConductor > 0) {
 		float actuationDepth = 2.5;
 		float unitVolume = 3.175;
 		return (actuationDepth + ((highestConductor - 1) * unitVolume));
@@ -81,29 +74,40 @@ float volumeFromHighestConductor(unsigned int highestConductor) {
 
 //returns the conductivity in Siemens from the voltage
 float conductivityFromVoltage(unsigned int voltage) {
+	return 0;
 }
 
 // - - - - CALCULATIONS ON DATA - - - -
 
-// returns the total amount of output in mL from the 
+// returns the total amount of output in mL from the
 // start of collection to the most recent data point
 float totalOutputFromStartOfCollection() {
 
-	float totalOutput = volumeSamples[totalNumOfSamples - 1] - volumeSamples[0]; 
-	outputLastHour = totalOutput; 
-	return totalOutput; 
+	float totalOutput = volumeSamples[totalNumOfSamples - 1] - volumeSamples[0];
+	outputLastHour = totalOutput;
+	return totalOutput;
 }
 
 // returns the total amout of output in mL from just the last hour
 float totalOutputFromTheLastHour() {
+	float totalOutput = 0;
+	if (volumeSamples[totalNumOfSamples - 1] == 0) {
+		//the array is not full, so we subtract the start from the finish
+		totalOutput = volumeSamples[index] - volumeSamples[0];
+	} else {
+		//the array is full, so we can subtract the current index from the next one
+		int nextIndex = (index + 1 > totalNumOfSamples - 1 ? 0 : index + 1);
+		totalOutput = volumeSamples[index] - volumeSamples[nextIndex];
+	}
+	outputLastHour = totalOutput;
 
-	return outputLastHour; 
+	return volumeSamples[index];
 }
 
-//Total output / total time 
+//Total output / total time
 float averageOutputFromStartOfCollection() {
 
-	float total_time = time_counter / totalNumOfSamples; 
+	float total_time = time_counter / totalNumOfSamples;
 	return (totalOutputFromBeginning / total_time);
 }
 

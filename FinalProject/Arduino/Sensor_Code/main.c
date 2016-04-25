@@ -11,7 +11,7 @@ int main (void) {
 	//how long between collections
 	uint8_t periodOfCollection = 5; 
 	//how long between collections
-	uint8_t frequencyOfCollection = 60 * 60 / periodOfCollection;
+	uint8_t frequencyOfCollection = 60;
 
 	uart_inits();
 
@@ -43,16 +43,14 @@ int main (void) {
 		unsigned int beforeDecimalPlace = (unsigned int) currentVolume;
 		unsigned int afterDecimalPlace = (unsigned int) ((currentVolume - beforeDecimalPlace) * 100);
 		
-		double totalLastHour = totalOutputFromTheLastHour();
-		unsigned int beforeDecimalPlaceLastHour = (unsigned int) totalLastHour;
-		unsigned int afterDecimalPlaceLastHour = (unsigned int) ((totalLastHour - beforeDecimalPlaceLastHour) * 100);
-
-
+		//double totalLastHour = totalOutputFromTheLastHour();
+		//unsigned int beforeDecimalPlaceLastHour = (unsigned int) totalLastHour;
+		//unsigned int afterDecimalPlaceLastHour = (unsigned int) ((totalLastHour - beforeDecimalPlaceLastHour) * 100);
 
 		setTotalOutput(beforeDecimalPlace, afterDecimalPlace);
-		setOutputPerHour(beforeDecimalPlaceLastHour, afterDecimalPlaceLastHour);
-		
+		//setOutputPerHour(beforeDecimalPlaceLastHour, afterDecimalPlaceLastHour);
+
 		updateDisplay();
-		delay_s(periodOfCollection);
+		delay_s(1);
 	}
 }
