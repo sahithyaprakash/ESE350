@@ -62,7 +62,7 @@ void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimal
 		sigDigs[1] = ' ';
 	}
 
-	drawString(sigDigs, strlen(sigDigs), line, shift);
+	drawString(sigDigs, sizeof(sigDigs), line, shift);
 	drawString(label, strlen(label), line + 1, shift);
 }
 
