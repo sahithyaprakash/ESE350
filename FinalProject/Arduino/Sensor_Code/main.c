@@ -35,7 +35,7 @@ int main (void) {
 	initializeStorage();
 
 	while (1) {
-		for (uint8_t timesTillArchive = 0; timesTillArchive < NUMBER_OF_DATA_POINTS_PER_ARCHIVE; timesTillArchive ++) {
+		for (uint8_t loopNumber = 0; loopNumber < NUMBER_OF_DATA_POINTS_PER_ARCHIVE; loopNumber ++) {
 			unsigned int highest_conductor = 0x00;
 			float currentVolume = 0;
 			float liquidAmt = 0x00;
