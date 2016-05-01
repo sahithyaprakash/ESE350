@@ -10,6 +10,9 @@
 // email: ptrent@seas.upenn.edu
 // blog: philliphtrentiii.info/embedded-systems-blog
 
+// the number of data points that will be put into storage until archive is called
+#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE 60
+
 // - - - -  INITIALIZATION - - - -
 
 // initializes all variables for the storage class

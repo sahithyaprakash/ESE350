@@ -19,14 +19,11 @@ unsigned int getDigitsAfterDecimalPlace(float value) {
 int main (void) {
 	// initialize controller state
 	//how long between collections
-	uint8_t periodOfCollection = 5;
-	//how many collections per archive
-	uint8_t frequencyOfCollection = 60;
+	uint8_t periodOfCollection = 1; //seconds
 
 	uart_inits();
 
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
-
 
 	// set registers to outputs
 	DDRB = 0xFD;
@@ -35,22 +32,30 @@ int main (void) {
 
 	initializeSensor();
 	initializeDisplay();
-	initializeStorage(frequencyOfCollection);
+	initializeStorage();
 
 	while (1) {
-		unsigned int highest_conductor = 0x00;
-		float currentVolume = 0;
-		float liquidAmt = 0x00;
+		for (uint8_t timesTillArchive = 0; timesTillArchive < NUMBER_OF_DATA_POINTS_PER_ARCHIVE; timesTillArchive ++) {
+			unsigned int highest_conductor = 0x00;
+			float currentVolume = 0;
+			float liquidAmt = 0x00;
 
-		for (uint8_t column = 0; column < 7; column ++) {
-			highest_conductor = highestConductorForColumn(column);
-			//printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
-			currentVolume += volumeFromHighestConductor(highest_conductor);
-			highest_conductor = 0x00;
+			for (uint8_t column = 0; column < 7; column ++) {
+				highest_conductor = highestConductorForColumn(column);
+				//printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
+				currentVolume += volumeFromHighestConductor(highest_conductor);
+				highest_conductor = 0x00;
+			}
+			//update the display and storage
+			addData(currentVolume);
+			setOutputSinceTheLastHour(getDigitsBeforeDecimalPlace(totalOutputSinceTheLastHour()), getDigitsAfterDecimalPlace(totalOutputSinceTheLastHour());
+			updateDisplay();
+			//wait
+			delay_s(periodOfCollection);
 		}
-		addData(currentVolume);
-		delay_s(5);
-
+		archiveData();
+		setOutputSinceTheLastHour(0, 0);
+		setOutputFromTheLastHour(getDigitsBeforeDecimalPlace(totalOutputFromTheLastHour()), getDigitsAfterDecimalPlace(totalOutputFromTheLastHour()));
 		updateDisplay();
 	}
 }
