@@ -11,7 +11,7 @@
 // blog: philliphtrentiii.info/embedded-systems-blog
 
 // the number of data points that will be put into storage until archive is called
-#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE 60
+#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE 10
 
 // - - - -  INITIALIZATION - - - -
 

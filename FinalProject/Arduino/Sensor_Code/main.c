@@ -47,6 +47,7 @@ int main (void) {
 			}
 			//update the display and storage
 			addData(currentVolume);
+			setContainerLiquidLevel(getDigitsBeforeDecimalPlace(currentVolume), getDigitsAfterDecimalPlace(currentVolume));
 			setOutputSinceTheLastHour(getDigitsBeforeDecimalPlace(totalOutputSinceTheLastHour()), getDigitsAfterDecimalPlace(totalOutputSinceTheLastHour()));
 			updateDisplay();
 			//wait
@@ -54,7 +55,6 @@ int main (void) {
 		}
 
 		archiveData();
-		setOutputSinceTheLastHour(0, 0);
 		setOutputFromTheLastHour(getDigitsBeforeDecimalPlace(totalOutputFromTheLastHour()), getDigitsAfterDecimalPlace(totalOutputFromTheLastHour()));
 		updateDisplay();
 	}
