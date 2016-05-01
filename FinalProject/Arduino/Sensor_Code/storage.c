@@ -24,7 +24,7 @@ int totalNumOfSamples;
 int time_counter;
 float totalOutputFromBeginning;
 float outputLastHour;
-float volumeSamples[60];
+float volumeSamples[NUMBER_OF_DATA_POINTS_PER_ARCHIVE + 10];
 
 // Initializes all variables for the storage class
 // param frequencyOfCollection: number of samples taken per hour
@@ -54,9 +54,14 @@ void clearData() {
 float addData(double liquidAmount) {
 
 	volumeSamples[index] = (float) liquidAmount;
-	printf("just put %i at index: %i", volumeSamples[index], index);
 	index = (index >= totalNumOfSamples - 1 ? 0 : index + 1);
 	time_counter ++;
+}
+
+// called when the more specific data should be compressed into a bundle. For the current
+// implementation, this will be called once at every hour.
+void archiveData() {
+	
 }
 
 // - - - - MATH - - - -
@@ -104,10 +109,11 @@ float totalOutputFromTheLastHour() {
 	return volumeSamples[index];
 }
 
-//Total output / total time
-float averageOutputFromStartOfCollection() {
-
-	float total_time = time_counter / totalNumOfSamples;
-	return (totalOutputFromBeginning / total_time);
+// returns the total amount of liquid added to the container since
+// the last hour. For example, if it's 7:15, then this function should
+// return how much liquid has been added since 7:00.
+float totalOutputSinceTheLastHour() {
+	return 0.0;
 }
+
 

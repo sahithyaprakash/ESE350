@@ -27,9 +27,6 @@ void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afte
 // sets the total amount of liquid currently in the container
 void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
 
-// puts the menu in the buffer to be displayed the menu
-void menu();
-
 // call when you want the entire display to be updated
 void updateDisplay();
 

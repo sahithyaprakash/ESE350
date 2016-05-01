@@ -102,6 +102,23 @@ void setTotalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPl
 	return;
 }
 
+// sets the output since the last hour. For example, if it's 7:15, then this is the amount
+// of liquid added to the container since 7:00.
+void setOutputSinceTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+
+}
+
+// sets the output from the last hour. For example, if it's 7:15, then this is the total amount of
+// liquid that was added to the container from 6:00-7:00.
+void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+
+}
+
+// sets the total amount of liquid currently in the container
+void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+
+}
+
 // call when you want the entire display to be updated
 void updateDisplay() {
 	printf("update display \n");

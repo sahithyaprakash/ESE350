@@ -42,17 +42,17 @@ int main (void) {
 
 			for (uint8_t column = 0; column < 7; column ++) {
 				highest_conductor = highestConductorForColumn(column);
-				//printf("Highest Conductor: (%i, %i) \n", highest_conductor, column);
 				currentVolume += volumeFromHighestConductor(highest_conductor);
 				highest_conductor = 0x00;
 			}
 			//update the display and storage
 			addData(currentVolume);
-			setOutputSinceTheLastHour(getDigitsBeforeDecimalPlace(totalOutputSinceTheLastHour()), getDigitsAfterDecimalPlace(totalOutputSinceTheLastHour());
+			setOutputSinceTheLastHour(getDigitsBeforeDecimalPlace(totalOutputSinceTheLastHour()), getDigitsAfterDecimalPlace(totalOutputSinceTheLastHour()));
 			updateDisplay();
 			//wait
 			delay_s(periodOfCollection);
 		}
+
 		archiveData();
 		setOutputSinceTheLastHour(0, 0);
 		setOutputFromTheLastHour(getDigitsBeforeDecimalPlace(totalOutputFromTheLastHour()), getDigitsAfterDecimalPlace(totalOutputFromTheLastHour()));
