@@ -14,7 +14,7 @@
 
 // initializes all variables for the storage class
 // param frequencyOfCollection: number of samples taken per hour 
-void initializeStorage(unsigned int frequencyOfCollection);
+void initializeStorage();
 
 // - - - - MANAGE STORAGE - - - -
 

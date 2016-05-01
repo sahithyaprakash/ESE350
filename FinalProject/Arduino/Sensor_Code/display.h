@@ -16,11 +16,19 @@
 // does all of the initialization work for the display
 void initializeDisplay();
 
-// 
-void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
+// sets the output since the last hour. For example, if it's 7:15, then this is the amount
+// of liquid added to the container since 7:00.
+void setOutputSinceTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
 
-// 
-void setTotalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
+// sets the output from the last hour. For example, if it's 7:15, then this is the total amount of
+// liquid that was added to the container from 6:00-7:00.
+void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
+
+// sets the total amount of liquid currently in the container
+void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace);
+
+// puts the menu in the buffer to be displayed the menu
+void menu();
 
 // call when you want the entire display to be updated
 void updateDisplay();
