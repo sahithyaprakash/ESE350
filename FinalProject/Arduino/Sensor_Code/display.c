@@ -28,19 +28,64 @@ void initializeDisplay() {
 	setup();
 	*buffer = get_buffer();
 	clear_buffer(buffer);
+	setContainerLiquidLevel(0, 0);
+	setOutputSinceTheLastHour(0, 0);
+	setOutputFromTheLastHour(0, 0);
 	write_buffer(buffer);
 }
 
 void drawString(char* string, uint8_t length, uint8_t line, uint8_t shift) {
-	printf("drawing %s\n", string);
-	for (int index = 0; index < length; index ++) {
-		drawchar(buffer, shift + index * CHAR_PADDING, line, string[index]);
+	for (int index = shift; index - shift < length; index ++) {
+		drawchar(buffer, index * CHAR_PADDING, line, string[index - shift]);
 	}
 }
+void setPercentageOfContainerFull(unsigned int percent) {
+	int line = 3;
+	int shift = 15;
+	char drawing[] = "   ";
+	drawing[0] = (((percent/10) % 10) + '0');
+	drawing[1] = ((percent % 10) + '0');
+	drawing[2] = '%';
 
-//
-void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+	char label[] = "FULL";
+
+	drawString(drawing, sizeof(drawing), line, shift);
+	drawString(label, sizeof(label), line + 1, shift);
+
+}
+// sets the output since the last hour. For example, if it's 7:15, then this is the amount
+// of liquid added to the container since 7:00.
+void setOutputSinceTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
 	int line = 6;
+	int shift = 0;
+	char label[] = "SINCE LAST HOUR";
+
+	char sigDigs[8];
+	sigDigs[0] = (((beforeDecimalPlace/100) % 10) + '0');
+	sigDigs[1] = (((beforeDecimalPlace/10) % 10) + '0');
+	sigDigs[2] = ((beforeDecimalPlace % 10) + '0');
+	sigDigs[3] = '.';
+	sigDigs[4] = (((afterDecimalPlace/10) % 10) + '0');
+	sigDigs[5] = ((afterDecimalPlace % 10) + '0');
+	sigDigs[6] = 'm';
+	sigDigs[7] = 'L';
+
+	if (beforeDecimalPlace < 100) {
+		sigDigs[0] = ' ';
+	}
+
+	if (beforeDecimalPlace < 10) {
+		sigDigs[1] = ' ';
+	}
+
+	drawString(sigDigs, sizeof(sigDigs), line, shift);
+	drawString(label, strlen(label), line + 1, shift);
+}
+
+// sets the output from the last hour. For example, if it's 7:15, then this is the total amount of
+// liquid that was added to the container from 6:00-7:00.
+void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+	int line = 3;
 	int shift = 0;
 	char label[] = "LAST HOUR";
 
@@ -66,12 +111,12 @@ void setOutputPerHour(unsigned int beforeDecimalPlace, unsigned int afterDecimal
 	drawString(label, strlen(label), line + 1, shift);
 }
 
-//
-void setTotalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-	printf("set total output to %i.%i \n", beforeDecimalPlace, afterDecimalPlace);
+// sets the total amount of liquid currently in the container
+void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
+	setPercentageOfContainerFull(beforeDecimalPlace/25);
 
 	int shift = 0;
-	int line = 2;
+	int line = 0;
 	char label[] = "  TOTAL";
 	char sigDigs[9];
 	sigDigs[0] = (((beforeDecimalPlace / 1000) % 10) + '0');
@@ -97,26 +142,6 @@ void setTotalOutput(unsigned int beforeDecimalPlace, unsigned int afterDecimalPl
 
 	drawString(sigDigs, sizeof(sigDigs), line, shift);
 	drawString(label, strlen(label), line + 1, shift);
-	drawrect(buffer, 0, 0, 10, 10, 0x00);
-
-	return;
-}
-
-// sets the output since the last hour. For example, if it's 7:15, then this is the amount
-// of liquid added to the container since 7:00.
-void setOutputSinceTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-
-}
-
-// sets the output from the last hour. For example, if it's 7:15, then this is the total amount of
-// liquid that was added to the container from 6:00-7:00.
-void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-
-}
-
-// sets the total amount of liquid currently in the container
-void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-
 }
 
 // call when you want the entire display to be updated
