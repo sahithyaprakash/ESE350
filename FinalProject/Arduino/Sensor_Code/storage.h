@@ -26,7 +26,7 @@ void clearData();
 
 // takes in the total amount of liquid currently in the container (summed over
 // all columns in mL) and adds the datapoint. 
-float addData(double liquidAmount);
+float addData(float liquidAmount);
 
 // called when the more specific data should be compressed into a bundle. For the current
 // implementation, this will be called once at every hour.

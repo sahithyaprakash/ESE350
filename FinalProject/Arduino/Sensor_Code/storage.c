@@ -14,28 +14,25 @@
 #include <stdlib.h>
 #include <Math.h>
 #include <String.h>
-#define ARBITRARY_SIZE 1000
 
+#define NUMBER_OF_ARCHIVES 6
 
 // - - - -  INITIALIZATION - - - -
 
-int index;
-int totalNumOfSamples;
-int time_counter;
-float totalOutputFromBeginning;
-float outputLastHour;
-float volumeSamples[NUMBER_OF_DATA_POINTS_PER_ARCHIVE + 10];
+int pointer;
+int lastArchivedOutput = NULL;
+float volumeSamples[NUMBER_OF_DATA_POINTS_PER_ARCHIVE];
+float archivedOutput[NUMBER_OF_ARCHIVES];
+
 
 // Initializes all variables for the storage class
 // param frequencyOfCollection: number of samples taken per hour
-void initializeStorage(unsigned int frequencyOfCollection) {
+void initializeStorage() {
 
-	//volumeSamples = malloc(frequencyOfCollection * sizeof(float));
-	index = 0;
-	totalNumOfSamples = frequencyOfCollection;
-	time_counter = 0;
-	totalOutputFromBeginning = 0.0;
-	outputLastHour = 0.0;
+	pointer = 1;
+	lastArchivedOutput = 0;
+	archivedOutput[0] = 0.0;
+	volumeSamples[0] = 0.0; 
 }
 
 // - - - - STORAGE - - - -
@@ -43,25 +40,30 @@ void initializeStorage(unsigned int frequencyOfCollection) {
 // Clears all the data currently in storage
 void clearData() {
 
-	totalOutputFromBeginning += volumeSamples[totalNumOfSamples - 1];
 	memset(volumeSamples, 0, sizeof(volumeSamples));
-	index = 0;
+	memset(archivedOutput, 0, sizeof(archivedOutput));
+	pointer = 0;
+	lastArchivedOutput = 0; 
 
 }
 
 // Takes in the total amount of liquid currently in the container (summed over
 // all columns in mL) and adds the datapoint.
-float addData(double liquidAmount) {
+float addData(float liquidAmount) {
 
-	volumeSamples[index] = (float) liquidAmount;
-	index = (index >= totalNumOfSamples - 1 ? 0 : index + 1);
-	time_counter ++;
+	volumeSamples[pointer] = liquidAmount;
+	pointer = (pointer >= NUMBER_OF_DATA_POINTS_PER_ARCHIVE - 1 ? 0 : pointer + 1);
+
 }
 
 // called when the more specific data should be compressed into a bundle. For the current
 // implementation, this will be called once at every hour.
 void archiveData() {
-	
+	lastArchivedOutput = lastArchivedOutput ++;
+	lastArchivedOutput = (lastArchivedOutput >= NUMBER_OF_ARCHIVES ? 0 : lastArchivedOutput);
+	archivedOutput[lastArchivedOutput] = volumeSamples[(pointer == 0 ? 0 : pointer - 1)] - volumeSamples[0];
+	pointer = 0;
+
 }
 
 // - - - - MATH - - - -
@@ -84,36 +86,27 @@ float conductivityFromVoltage(unsigned int voltage) {
 
 // - - - - CALCULATIONS ON DATA - - - -
 
-// returns the total amount of output in mL from the
-// start of collection to the most recent data point
-float totalOutputFromStartOfCollection() {
+// returns the total amount of liquid currently in the container in mL. For example, 
+// if the patient was admitted at 7:00, the container was emptied at 8:00, then it
+// should return the amount of liquid since 8:00.
+float currentLiquidLevel() {
 
-	float totalOutput = volumeSamples[totalNumOfSamples - 1] - volumeSamples[0];
-	outputLastHour = totalOutput;
-	return totalOutput;
+	return volumeSamples[(pointer == 0 ? 0 : pointer - 1)]; 
 }
 
 // returns the total amout of output in mL from just the last hour
 float totalOutputFromTheLastHour() {
-	float totalOutput = 0;
-	if (volumeSamples[totalNumOfSamples - 1] == 0) {
-		//the array is not full, so we subtract the start from the finish
-		totalOutput = volumeSamples[index] - volumeSamples[0];
-	} else {
-		//the array is full, so we can subtract the current index from the next one
-		int nextIndex = (index + 1 > totalNumOfSamples - 1 ? 0 : index + 1);
-		totalOutput = volumeSamples[index] - volumeSamples[nextIndex];
-	}
-	outputLastHour = totalOutput;
+	
+	return archivedOutput[lastArchivedOutput];
 
-	return volumeSamples[index];
 }
 
 // returns the total amount of liquid added to the container since
 // the last hour. For example, if it's 7:15, then this function should
 // return how much liquid has been added since 7:00.
 float totalOutputSinceTheLastHour() {
-	return 0.0;
+	
+	return volumeSamples[(pointer == 0 ? 0 : pointer - 1)] - volumeSamples[0]; 
 }
 
 
