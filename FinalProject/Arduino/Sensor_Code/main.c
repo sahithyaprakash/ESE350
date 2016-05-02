@@ -36,15 +36,16 @@ int main (void) {
 
 	while (1) {
 		for (uint8_t loopNumber = 0; loopNumber < NUMBER_OF_DATA_POINTS_PER_ARCHIVE; loopNumber ++) {
-			unsigned int highest_conductor = 0x00;
-			float currentVolume = 0;
-			float liquidAmt = 0x00;
+			unsigned int highest_conductor = 0;
+			float currentVolume = 0.0;
+			//float liquidAmt = 0x00;
 
-			for (uint8_t column = 0; column < 7; column ++) {
-				highest_conductor = highestConductorForColumn(column);
-				currentVolume += volumeFromHighestConductor(highest_conductor);
-				highest_conductor = 0x00;
-			}
+			 for (unsigned int column = 0; column < 7; column ++) {
+			 	highest_conductor = highestConductorForColumn(column);
+			 	currentVolume += volumeFromHighestConductor(highest_conductor);
+			 	highest_conductor = 0;
+			 }
+
 			//update the display and storage
 			addData(currentVolume);
 			setContainerLiquidLevel(getDigitsBeforeDecimalPlace(currentVolume), getDigitsAfterDecimalPlace(currentVolume));

@@ -146,6 +146,6 @@ void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int after
 
 // call when you want the entire display to be updated
 void updateDisplay() {
-	printf("update display \n");
+	//printf("update display \n");
 	write_buffer(buffer);
 }

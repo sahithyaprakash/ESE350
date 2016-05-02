@@ -448,7 +448,7 @@ void st7565_set_brightness(uint8_t val) {
 
 void write_buffer(uint8_t *buffer) {
   uint8_t c, p;
-  printf("write_buffer \n");
+  //printf("write_buffer \n");
   for (p = 0; p < 8; p++) {
     /*
       putstring("new page! ");
@@ -456,7 +456,7 @@ void write_buffer(uint8_t *buffer) {
       putstring_nl("");
     */
     st7565_command(CMD_SET_PAGE | pagemap[p]);
-    printf("page: %i\n", pagemap[p]);
+    //printf("page: %i\n", pagemap[p]);
     st7565_command(CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
     st7565_command(CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
     st7565_command(CMD_RMW);

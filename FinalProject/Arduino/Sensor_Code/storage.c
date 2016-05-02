@@ -14,12 +14,13 @@
 #include <stdlib.h>
 #include <Math.h>
 #include <String.h>
+#include <stdio.h>
 
 #define NUMBER_OF_ARCHIVES 6
 
 // - - - -  INITIALIZATION - - - -
 
-int pointer;
+int currentVolumePointer = NULL;
 int lastArchivedOutput = NULL;
 float volumeSamples[NUMBER_OF_DATA_POINTS_PER_ARCHIVE];
 float archivedOutput[NUMBER_OF_ARCHIVES];
@@ -29,10 +30,10 @@ float archivedOutput[NUMBER_OF_ARCHIVES];
 // param frequencyOfCollection: number of samples taken per hour
 void initializeStorage() {
 
-	pointer = 1;
+	currentVolumePointer = 0;
 	lastArchivedOutput = 0;
-	archivedOutput[0] = 0.0;
-	volumeSamples[0] = 0.0; 
+	memset(volumeSamples, 0, sizeof(volumeSamples));
+	memset(archivedOutput, 0, sizeof(archivedOutput)); 
 }
 
 // - - - - STORAGE - - - -
@@ -42,7 +43,7 @@ void clearData() {
 
 	memset(volumeSamples, 0, sizeof(volumeSamples));
 	memset(archivedOutput, 0, sizeof(archivedOutput));
-	pointer = 0;
+	currentVolumePointer = 0;
 	lastArchivedOutput = 0; 
 
 }
@@ -51,18 +52,23 @@ void clearData() {
 // all columns in mL) and adds the datapoint.
 float addData(float liquidAmount) {
 
-	volumeSamples[pointer] = liquidAmount;
-	pointer = (pointer >= NUMBER_OF_DATA_POINTS_PER_ARCHIVE - 1 ? 0 : pointer + 1);
+	//Store and then increment the pointer (index of the next slot to be filled that's not currently filled)
+	volumeSamples[currentVolumePointer] = liquidAmount;
+	currentVolumePointer++;
 
 }
 
 // called when the more specific data should be compressed into a bundle. For the current
 // implementation, this will be called once at every hour.
 void archiveData() {
-	lastArchivedOutput = lastArchivedOutput ++;
+	printf("Archiving Data: \n");
+	//Store and then increment the pointer (index of the next slot ot be filled that's not currently filled)
+	archivedOutput[lastArchivedOutput] = volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)] - volumeSamples[0];
+	printf("Data Saved: (%i, %d)\n", lastArchivedOutput, archivedOutput[lastArchivedOutput]);
+	lastArchivedOutput ++;
 	lastArchivedOutput = (lastArchivedOutput >= NUMBER_OF_ARCHIVES ? 0 : lastArchivedOutput);
-	archivedOutput[lastArchivedOutput] = volumeSamples[(pointer == 0 ? 0 : pointer - 1)] - volumeSamples[0];
-	pointer = 0;
+	printf("New Archived Pointer: %i\n\n", lastArchivedOutput);
+	currentVolumePointer = 0;
 
 }
 
@@ -72,10 +78,19 @@ void archiveData() {
 // the volume of liquid in that column (mL)
 float volumeFromHighestConductor(unsigned int highestConductor) {
 
+	double calculation = 0.0;
+	float actuationDepth = 0.0;
+	float unitVolume = 0.0;
+
 	if (highestConductor > 0) {
-		float actuationDepth = 2.5;
-		float unitVolume = 3.175;
-		return (actuationDepth + ((highestConductor - 1) * unitVolume));
+		//2.5
+		actuationDepth = 1.654;
+		//3.175
+		unitVolume = 2.101;
+		calculation = actuationDepth + ((highestConductor - 1) * unitVolume);
+		return calculation;
+	} else {
+		return 0.0; 
 	}
 }
 
@@ -91,13 +106,13 @@ float conductivityFromVoltage(unsigned int voltage) {
 // should return the amount of liquid since 8:00.
 float currentLiquidLevel() {
 
-	return volumeSamples[(pointer == 0 ? 0 : pointer - 1)]; 
+	return volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)]; 
 }
 
 // returns the total amout of output in mL from just the last hour
 float totalOutputFromTheLastHour() {
 	
-	return archivedOutput[lastArchivedOutput];
+	return archivedOutput[(lastArchivedOutput == 0 ? 0 : lastArchivedOutput - 1)];
 
 }
 
@@ -106,7 +121,7 @@ float totalOutputFromTheLastHour() {
 // return how much liquid has been added since 7:00.
 float totalOutputSinceTheLastHour() {
 	
-	return volumeSamples[(pointer == 0 ? 0 : pointer - 1)] - volumeSamples[0]; 
+	return volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)] - volumeSamples[0]; 
 }
 
 
