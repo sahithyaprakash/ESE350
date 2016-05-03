@@ -12,6 +12,10 @@
 
 // Debug printing functions - handy!
 #define uart_putc(c) uart_putchar(c)
+// by default we stick strings in ROM to save RAM
+#define putstring(x) ROM_putstring(PSTR(x), 0)
+#define putstring_nl(x) ROM_putstring(PSTR(x), 1)
+#define nop asm volatile ("nop\n\t")
 
 int uart_putchar(char c);
 void uart_init(uint16_t BRR);
@@ -28,13 +32,7 @@ void uart_puts(const char* str);
 void RAM_putstring(char *str);
 void ROM_putstring(const char *str, uint8_t nl);
 
-// by default we stick strings in ROM to save RAM
-#define putstring(x) ROM_putstring(PSTR(x), 0)
-#define putstring_nl(x) ROM_putstring(PSTR(x), 1)
-#define nop asm volatile ("nop\n\t")
-
 // some timing functions
-
 void delay_ms(unsigned char ms);
 void delay_10us(uint8_t us);
 void delay_s(uint8_t s);

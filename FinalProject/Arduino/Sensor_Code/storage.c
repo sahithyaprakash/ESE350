@@ -17,59 +17,100 @@
 #include <stdio.h>
 
 #define NUMBER_OF_ARCHIVES 6
+#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE_LOW 10 //60
+#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE_MED 13 //80
+#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE_HIGH 20 //120
 
 // - - - -  INITIALIZATION - - - -
 
 int currentVolumePointer = NULL;
 int lastArchivedOutput = NULL;
-float volumeSamples[NUMBER_OF_DATA_POINTS_PER_ARCHIVE];
+SpecificityOfData specificity = LOW;
+float volumeSamplesLow[NUMBER_OF_DATA_POINTS_PER_ARCHIVE_LOW];
+float volumeSamplesMed[NUMBER_OF_DATA_POINTS_PER_ARCHIVE_MED];
+float volumeSamplesHigh[NUMBER_OF_DATA_POINTS_PER_ARCHIVE_HIGH];
 float archivedOutput[NUMBER_OF_ARCHIVES];
 
 
 // Initializes all variables for the storage class
 // param frequencyOfCollection: number of samples taken per hour
-void initializeStorage() {
+void initializeStorage(SpecificityOfData s) {
 
 	currentVolumePointer = 0;
+	specificity = s;
 	lastArchivedOutput = 0;
-	memset(volumeSamples, 0, sizeof(volumeSamples));
-	memset(archivedOutput, 0, sizeof(archivedOutput)); 
+	memset(volumeSamplesLow, 0, sizeof(volumeSamplesLow));
+	memset(volumeSamplesMed, 0, sizeof(volumeSamplesMed));
+	memset(volumeSamplesHigh, 0, sizeof(volumeSamplesHigh));
+	memset(archivedOutput, 0, sizeof(archivedOutput));
 }
 
+int numberOfSamplesForSpecificityLevel(SpecificityOfData s) {
+	switch (specificity) {
+	case LOW:
+		return NUMBER_OF_DATA_POINTS_PER_ARCHIVE_LOW;
+	case MEDIUM:
+		return NUMBER_OF_DATA_POINTS_PER_ARCHIVE_MED;
+	case HIGH:
+		return NUMBER_OF_DATA_POINTS_PER_ARCHIVE_HIGH;
+	}
+}
 // - - - - STORAGE - - - -
 
 // Clears all the data currently in storage
 void clearData() {
 
-	memset(volumeSamples, 0, sizeof(volumeSamples));
+	memset(volumeSamplesLow, 0, sizeof(volumeSamplesLow));
+	memset(volumeSamplesMed, 0, sizeof(volumeSamplesMed));
+	memset(volumeSamplesHigh, 0, sizeof(volumeSamplesHigh));
 	memset(archivedOutput, 0, sizeof(archivedOutput));
 	currentVolumePointer = 0;
-	lastArchivedOutput = 0; 
+	lastArchivedOutput = 0;
 
+}
+
+void setVolumeSamples(float value) {
+	switch (specificity) {
+	case LOW:
+		volumeSamplesLow[currentVolumePointer] = value;
+		break;
+	case MEDIUM:
+		volumeSamplesMed[currentVolumePointer] = value;
+		break;
+	case HIGH:
+		volumeSamplesHigh[currentVolumePointer] = value;
+		break;
+	}
+	currentVolumePointer++;
+}
+
+float getVolumeSample(int index) {
+	switch (specificity) {
+	case LOW:
+		return volumeSamplesLow[index];
+	case MEDIUM:
+		return volumeSamplesMed[index];
+	case HIGH:
+		return volumeSamplesHigh[index];
+	}
 }
 
 // Takes in the total amount of liquid currently in the container (summed over
 // all columns in mL) and adds the datapoint.
 float addData(float liquidAmount) {
-
-	//Store and then increment the pointer (index of the next slot to be filled that's not currently filled)
-	volumeSamples[currentVolumePointer] = liquidAmount;
-	currentVolumePointer++;
-
+	setVolumeSamples(liquidAmount);
 }
 
 // called when the more specific data should be compressed into a bundle. For the current
 // implementation, this will be called once at every hour.
-void archiveData() {
-	printf("Archiving Data: \n");
+void archiveData(SpecificityOfData newSpecificity) {
 	//Store and then increment the pointer (index of the next slot ot be filled that's not currently filled)
-	archivedOutput[lastArchivedOutput] = volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)] - volumeSamples[0];
-	printf("Data Saved: (%i, %d)\n", lastArchivedOutput, archivedOutput[lastArchivedOutput]);
+	archivedOutput[lastArchivedOutput] = totalOutputSinceTheLastHour();
+	//update the archive pointer
 	lastArchivedOutput ++;
 	lastArchivedOutput = (lastArchivedOutput >= NUMBER_OF_ARCHIVES ? 0 : lastArchivedOutput);
-	printf("New Archived Pointer: %i\n\n", lastArchivedOutput);
 	currentVolumePointer = 0;
-
+	specificity = newSpecificity;
 }
 
 // - - - - MATH - - - -
@@ -90,7 +131,7 @@ float volumeFromHighestConductor(unsigned int highestConductor) {
 		calculation = actuationDepth + ((highestConductor - 1) * unitVolume);
 		return calculation;
 	} else {
-		return 0.0; 
+		return 0.0;
 	}
 }
 
@@ -101,17 +142,17 @@ float conductivityFromVoltage(unsigned int voltage) {
 
 // - - - - CALCULATIONS ON DATA - - - -
 
-// returns the total amount of liquid currently in the container in mL. For example, 
+// returns the total amount of liquid currently in the container in mL. For example,
 // if the patient was admitted at 7:00, the container was emptied at 8:00, then it
 // should return the amount of liquid since 8:00.
 float currentLiquidLevel() {
 
-	return volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)]; 
+	return getVolumeSample(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1);
 }
 
 // returns the total amout of output in mL from just the last hour
 float totalOutputFromTheLastHour() {
-	
+
 	return archivedOutput[(lastArchivedOutput == 0 ? 0 : lastArchivedOutput - 1)];
 
 }
@@ -120,8 +161,8 @@ float totalOutputFromTheLastHour() {
 // the last hour. For example, if it's 7:15, then this function should
 // return how much liquid has been added since 7:00.
 float totalOutputSinceTheLastHour() {
-	
-	return volumeSamples[(currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)] - volumeSamples[0]; 
+
+	return getVolumeSample((currentVolumePointer == 0 ? 0 : currentVolumePointer - 1)) - getVolumeSample(0);
 }
 
 

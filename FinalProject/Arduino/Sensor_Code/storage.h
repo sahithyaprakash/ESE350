@@ -11,13 +11,17 @@
 // blog: philliphtrentiii.info/embedded-systems-blog
 
 // the number of data points that will be put into storage until archive is called
-#define NUMBER_OF_DATA_POINTS_PER_ARCHIVE 10
 
+typedef enum { LOW, MEDIUM, HIGH } SpecificityOfData;
 // - - - -  INITIALIZATION - - - -
 
 // initializes all variables for the storage class
 // param frequencyOfCollection: number of samples taken per hour 
-void initializeStorage();
+// returns the number of samples needed for each archive with this specificity level
+void initializeStorage(SpecificityOfData s);
+
+// returns the number of samples needed for each archive with this specificity level
+int numberOfSamplesForSpecificityLevel(SpecificityOfData s);
 
 // - - - - MANAGE STORAGE - - - -
 
@@ -30,7 +34,7 @@ float addData(float liquidAmount);
 
 // called when the more specific data should be compressed into a bundle. For the current
 // implementation, this will be called once at every hour.
-void archiveData();
+void archiveData(SpecificityOfData newSpecificity);
 
 // - - - - MATH - - - -
 

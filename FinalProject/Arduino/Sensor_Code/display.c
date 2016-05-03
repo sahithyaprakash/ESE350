@@ -31,6 +31,7 @@ void initializeDisplay() {
 	setContainerLiquidLevel(0, 0);
 	setOutputSinceTheLastHour(0, 0);
 	setOutputFromTheLastHour(0, 0);
+	setDisplaySpecificity(0);
 	write_buffer(buffer);
 }
 
@@ -43,7 +44,7 @@ void setPercentageOfContainerFull(unsigned int percent) {
 	int line = 3;
 	int shift = 15;
 	char drawing[] = "   ";
-	drawing[0] = (((percent/10) % 10) + '0');
+	drawing[0] = (((percent / 10) % 10) + '0');
 	drawing[1] = ((percent % 10) + '0');
 	drawing[2] = '%';
 
@@ -61,11 +62,11 @@ void setOutputSinceTheLastHour(unsigned int beforeDecimalPlace, unsigned int aft
 	char label[] = "SINCE LAST HOUR";
 
 	char sigDigs[8];
-	sigDigs[0] = (((beforeDecimalPlace/100) % 10) + '0');
-	sigDigs[1] = (((beforeDecimalPlace/10) % 10) + '0');
+	sigDigs[0] = (((beforeDecimalPlace / 100) % 10) + '0');
+	sigDigs[1] = (((beforeDecimalPlace / 10) % 10) + '0');
 	sigDigs[2] = ((beforeDecimalPlace % 10) + '0');
 	sigDigs[3] = '.';
-	sigDigs[4] = (((afterDecimalPlace/10) % 10) + '0');
+	sigDigs[4] = (((afterDecimalPlace / 10) % 10) + '0');
 	sigDigs[5] = ((afterDecimalPlace % 10) + '0');
 	sigDigs[6] = 'm';
 	sigDigs[7] = 'L';
@@ -90,11 +91,11 @@ void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afte
 	char label[] = "LAST HOUR";
 
 	char sigDigs[8];
-	sigDigs[0] = (((beforeDecimalPlace/100) % 10) + '0');
-	sigDigs[1] = (((beforeDecimalPlace/10) % 10) + '0');
+	sigDigs[0] = (((beforeDecimalPlace / 100) % 10) + '0');
+	sigDigs[1] = (((beforeDecimalPlace / 10) % 10) + '0');
 	sigDigs[2] = ((beforeDecimalPlace % 10) + '0');
 	sigDigs[3] = '.';
-	sigDigs[4] = (((afterDecimalPlace/10) % 10) + '0');
+	sigDigs[4] = (((afterDecimalPlace / 10) % 10) + '0');
 	sigDigs[5] = ((afterDecimalPlace % 10) + '0');
 	sigDigs[6] = 'm';
 	sigDigs[7] = 'L';
@@ -113,7 +114,7 @@ void setOutputFromTheLastHour(unsigned int beforeDecimalPlace, unsigned int afte
 
 // sets the total amount of liquid currently in the container
 void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int afterDecimalPlace) {
-	setPercentageOfContainerFull(beforeDecimalPlace/25);
+	setPercentageOfContainerFull(beforeDecimalPlace / 25);
 
 	int shift = 0;
 	int line = 0;
@@ -144,6 +145,21 @@ void setContainerLiquidLevel(unsigned int beforeDecimalPlace, unsigned int after
 	drawString(label, strlen(label), line + 1, shift);
 }
 
+void setDisplaySpecificity(int s) {
+	int line = 0;
+	int shift = 18;
+	switch (s) {
+	case 0:
+		drawString("LOW", sizeof("LOW"), line, shift);
+		break;
+	case 1:
+		drawString("MED", sizeof("MED"), line, shift);
+		break;
+	case 2:
+		drawString("HI ", sizeof("HI "), line, shift);
+		break;
+	}
+}
 // call when you want the entire display to be updated
 void updateDisplay() {
 	//printf("update display \n");

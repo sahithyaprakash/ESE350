@@ -20,7 +20,7 @@ int main (void) {
 	// initialize controller state
 	//how long between collections
 	uint8_t periodOfCollection = 1; //seconds
-
+	SpecificityOfData specificity = LOW;
 	uart_inits();
 
 	TCCR0A = 0x05; 					// start timer, prescaler = 1024
@@ -32,10 +32,10 @@ int main (void) {
 
 	initializeSensor();
 	initializeDisplay();
-	initializeStorage();
+	initializeStorage(specificity);
 
 	while (1) {
-		for (uint8_t loopNumber = 0; loopNumber < NUMBER_OF_DATA_POINTS_PER_ARCHIVE; loopNumber ++) {
+		for (uint8_t loopNumber = numberOfSamplesForSpecificityLevel(specificity); loopNumber > 0; loopNumber --) {
 			unsigned int highest_conductor = 0;
 			float currentVolume = 0.0;
 			//float liquidAmt = 0x00;
@@ -52,10 +52,19 @@ int main (void) {
 			setOutputSinceTheLastHour(getDigitsBeforeDecimalPlace(totalOutputSinceTheLastHour()), getDigitsAfterDecimalPlace(totalOutputSinceTheLastHour()));
 			updateDisplay();
 			//wait
-			delay_s(periodOfCollection);
+			uint8_t delayTime = 3 - specificity;
+			delay_s(delayTime);
 		}
-
-		archiveData();
+		int totalOutputSinceLastHour = (int) totalOutputSinceTheLastHour();
+		if (totalOutputSinceLastHour < 10) {
+			specificity = HIGH;
+		} else if (totalOutputSinceLastHour < 20) {
+			specificity = MEDIUM;
+		} else {
+			specificity = LOW;
+		}
+		setDisplaySpecificity(specificity);
+		archiveData(specificity);
 		setOutputFromTheLastHour(getDigitsBeforeDecimalPlace(totalOutputFromTheLastHour()), getDigitsAfterDecimalPlace(totalOutputFromTheLastHour()));
 		updateDisplay();
 	}
