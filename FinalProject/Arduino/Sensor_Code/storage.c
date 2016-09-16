@@ -4,11 +4,9 @@
 // by Phillip Trent & Sahithya Prakash
 // University of Pennsylvania
 //
-// [description of the file]
 //
-// author: ptrent
-// email: ptrent@seas.upenn.edu
-// blog: philliphtrentiii.info/embedded-systems-blog
+// author: ptrent and sahithyaprakash
+// email: ptrent@seas.upenn.edu, sahithya@seas.upenn.edu
 
 #include "storage.h"
 #include <stdlib.h>
